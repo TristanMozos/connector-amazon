@@ -162,7 +162,7 @@ class AmazonBackend(models.Model):
         return True
 
     @api.multi
-    def _import_sale_orders(self, import_start_time=None, import_end_time=datetime.now(), generate_report=True):
+    def _import_sale_orders(self, import_start_time=None, import_end_time=datetime.now(), generate_report=False):
         for backend in self:
             user = backend.warehouse_id.company_id.user_tech_id
             if not user:
