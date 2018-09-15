@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Amazon Menu -->
+    <menuitem id="menu_amazon_root"
+        parent="connector.menu_connector_root"
+        name="Amazon"
+        sequence="10"
+        groups="connector.group_connector_manager"/>
+
+    <!-- Config submenu -->
+    <menuitem id="menu_amazon_configuration"
+        name="Configuration"
+        parent="menu_amazon_root"
+        sequence="20"
+        groups="connector.group_connector_manager"/>
+
+     <menuitem id="menu_amazon_marketplace"
+        name="Marketplace"
+        parent="menu_amazon_configuration"
+        action="action_amazon_marketplace"/>
+
+     <menuitem id="menu_amazon_category_product"
+        name="Category product"
+        parent="menu_amazon_configuration"
+        action="action_amazon_category_product"/>
+
+    <menuitem id="menu_amazon_mws_control_quota"
+        name="MWS config"
+        parent="menu_amazon_configuration"
+        action="action_amazon_mws_control_quota"/>
+
+    <!-- Backends submenu -->
+    <menuitem id="menu_amazon_backend"
+        name="Backends"
+        parent="menu_amazon_root"
+        action="action_amazon_backend"/>
+
+    <!-- Products submenu -->
+    <menuitem id="menu_amazon_products"
+        parent="menu_amazon_root"
+        name="Products"
+        sequence="30"/>
+
+    <menuitem id="menu_amazon_products_on_amazon"
+        parent="menu_amazon_products"
+        name="Products on Amazon"
+        action="action_amazon_product"/>
+
+    <menuitem id="menu_amazon_products_market"
+        parent="menu_amazon_products"
+        name="Products marketplace data"
+        action="action_amazon_product_marketplace"/>
+
+    <!-- Orders submenu -->
+    <menuitem id="menu_amazon_orders"
+        name="Orders"
+        parent="menu_amazon_root"
+        action="action_amazon_order"/>
+
+    <menuitem id="menu_amazon_partners"
+        name="Partners"
+        parent="menu_amazon_root"
+        action="action_amazon_partner"/>
+
+    <!-- Returns submenu -->
+    <menuitem id="menu_amazon_returns"
+        name="Returns"
+        parent="menu_amazon_root"
+        action="action_amazon_return"/>
+
+</odoo>

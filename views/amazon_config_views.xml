@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Marketplace -->
+    <record id="view_amazon_marketplace_tree" model="ir.ui.view">
+        <field name="name">Amazon marketplaces</field>
+        <field name="model">amazon.config.marketplace</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Marketplaces">
+                <field name="name"/>
+                <field name="id_mws"/>
+                <field name="country_id"/>
+                <field name="lang_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_marketplace_form" model="ir.ui.view">
+        <field name="name">amazon.config.marketplace.form</field>
+        <field name="model">amazon.config.marketplace</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="name"/></group>
+                <group><field name="id_mws"/></group>
+                <group><field name="country_id"/></group>
+                <group><field name="lang_id"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_marketplace" model="ir.actions.act_window">
+        <field name="name">Amazon Marketplaces</field>
+        <field name="res_model">amazon.config.marketplace</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_marketplace_tree"/>
+    </record>
+
+    <!-- Product category -->
+    <record id="view_amazon_category_product_tree" model="ir.ui.view">
+        <field name="name">Amazon category product</field>
+        <field name="model">amazon.config.product.category</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon category product">
+                <field name="name"/>
+                <field name="percentage"/>
+                <field name="market_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_category_product_form" model="ir.ui.view">
+        <field name="name">amazon.config.product.category.form</field>
+        <field name="model">amazon.config.product.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="name"/></group>
+                <group><field name="percentage"/></group>
+                <group><field name="market_id"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_category_product" model="ir.actions.act_window">
+        <field name="name">Amazon category product</field>
+        <field name="res_model">amazon.config.product.category</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_category_product_tree"/>
+    </record>
+
+    <!-- MWS control quota -->
+    <record id="view_amazon_mws_control_quota_tree" model="ir.ui.view">
+        <field name="name">Amazon MWS control request</field>
+        <field name="model">amazon.control.request</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon control request">
+                <field name="request_name"/>
+                <field name="max_quota"/>
+                <field name="restore_rate"/>
+                <field name="max_request_quota_time"/>
+                <field name="max_request_quota_units"/>
+                <field name="units_of_mesaure_quota"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_mws_control_quota_form" model="ir.ui.view">
+        <field name="name">amazon.control.request.form</field>
+        <field name="model">amazon.control.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="request_name"/></group>
+                <group><field name="max_quota"/></group>
+                <group><field name="restore_rate"/></group>
+                <group><field name="max_request_quota_time"/></group>
+                <group><field name="max_request_quota_units"/></group>
+                <group><field name="units_of_mesaure_quota"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_mws_control_quota" model="ir.actions.act_window">
+        <field name="name">MWS control quota</field>
+        <field name="res_model">amazon.control.request</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_mws_control_quota_tree"/>
+    </record>
+
+</odoo>

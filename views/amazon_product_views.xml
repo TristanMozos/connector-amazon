@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- PRODUCTS -->
+    <record id="view_amazon_product_tree" model="ir.ui.view">
+        <field name="name">Amazon product</field>
+        <field name="model">amazon.product.product</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Product">
+                <field name="odoo_id"/>
+                <field name="asin"/>
+                <field name="sku"/>
+                <field name="brand"/>
+                <field name="amazon_qty"/>
+                <field name="height"/>
+                <field name="length"/>
+                <field name="weight"/>
+                <field name="width"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_product_form" model="ir.ui.view">
+        <field name="name">amazon.product.product.form</field>
+        <field name="model">amazon.product.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="odoo_id"/></group>
+                <group><field name="asin"/></group>
+                <group><field name="sku"/></group>
+                <group><field name="brand"/></group>
+                <group><field name="amazon_qty"/></group>
+                <group><field name="height"/></group>
+                <group><field name="length"/></group>
+                <group><field name="weight"/></group>
+                <group><field name="width"/></group>
+                <field name="product_product_market_ids"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_product" model="ir.actions.act_window">
+        <field name="name">Amazon Products</field>
+        <field name="res_model">amazon.product.product</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_product_tree"/>
+    </record>
+
+
+    <!-- PRODUCT MARKETPLACE DATA -->
+    <record id="view_amazon_product_marketplace_tree" model="ir.ui.view">
+        <field name="name">Amazon product marketplace data</field>
+        <field name="model">amazon.product.product.detail</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Marketplace Product Data">
+                <field name="title"/>
+                <field name="price"/>
+                <field name="price_ship"/>
+                <field name="currency_price"/>
+                <field name="lowest_price"/>
+                <field name="lowest_product_price"/>
+                <field name="lowest_shipping_price"/>
+                <field name="has_buybox"/>
+                <field name="has_lowest_price"/>
+                <field name="marketplace_id"/>
+                <field name="status"/>
+                <field name="stock"/>
+                <field name="category_id"/>
+                <field name="merchant_shipping_group"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_amazon_product_marketplace" model="ir.actions.act_window">
+        <field name="name">Amazon product marketplace data</field>
+        <field name="res_model">amazon.product.product.detail</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_product_marketplace_tree"/>
+    </record>
+
+</odoo>

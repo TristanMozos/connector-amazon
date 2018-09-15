@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_update_handling_time_form" model="ir.ui.view">
+        <field name="name" >Wizard Update Handling Time</field>
+        <field name="model" >amazon.order.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="time_handling"></field>
+                    </group>
+                    <footer>
+                        <button special="cancel" string="Cancelar"/>
+                        <button name="Time_Handling"
+                                type="object"
+                                string="Import"
+                                class="oe_highlight"/>
+                    </footer>
+               </sheet>
+            </form>
+        </field>
+    </record>
+
+
+
+    <act_window id="action_view_wizard_export_product_to_amazon"
+                name="Update Amazon handling time"
+                src_model="product.template"
+                res_model="amazon.update.handling.time.wizard"
+                view_type="tree"
+                view_mode="form"
+                target="new"
+                key2="client_action_multi"/>
+
+</odoo>

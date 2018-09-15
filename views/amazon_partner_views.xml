@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_amazon_partner_tree" model="ir.ui.view">
+			<field name="name">Partners</field>
+			<field name="model">amazon.res.partner</field>
+			<field name="arch" type="xml">
+				<tree string="Partners" create="false">
+					<field name="odoo_id" string="Partner on odoo" />
+                    <field name="alias" string="Alias" />
+                    <field name="id_partner" string="Id Partner" />
+				</tree>
+			</field>
+		</record>
+
+    <record id="view_amazon_partner_form" model="ir.ui.view">
+        <field name="name">amazon.res.partner.form</field>
+        <field name="model">amazon.res.partner</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="odoo_id" string="Partner on odoo" /></group>
+                <group><field name="alias" string="Alias" /></group>
+                <group><field name="id_partner" string="Id Partner" /></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_partner" model="ir.actions.act_window">
+        <field name="name">Amazon Partners</field>
+        <field name="res_model">amazon.res.partner</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_partner_tree"/>
+    </record>
+
+</odoo>

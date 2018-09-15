@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record model="base.config.settings" id="base_config_settings_amazon">
+
+            <field name="group_multi_currency" eval="True"/>
+
+        </record>
+
+        <function model="base.config.settings" name="execute">
+
+            <!-- ids = -->        <value eval="[ref('base_config_settings_amazon')]"/>
+
+            <!-- context = -->    <value eval="{}"/>
+
+        </function>
+
+        <record model="sale.config.settings" id="sale_config_settings_amazon">
+
+            <field name="default_picking_policy" eval="1"/>
+            <field name="group_product_variant" eval="1"/>
+            <!-- field name="sale_pricelist_setting" eval="3"/ -->
+            <field name="group_sale_delivery_address" eval="1"/>
+            <field name="module_sale_margin" eval="1"/>
+            <!-- field name="sale_show_tax" eval="True"/ -->
+            <field name="module_sale_order_dates" eval="1"/>
+
+        </record>
+
+        <function model="sale.config.settings" name="execute">
+
+            <!-- ids = -->        <value eval="[ref('sale_config_settings_amazon')]"/>
+
+            <!-- context = -->    <value eval="{}"/>
+
+        </function>
+
+        <record model="stock.config.settings" id="stock_config_settings_amazon">
+
+            <field name="module_stock_landed_costs" eval="1"/>
+            <field name="warehouse_and_location_usage_level" eval="2"/>
+            <field name="group_stock_packaging" eval="1"/>
+
+        </record>
+
+        <function model="stock.config.settings" name="execute">
+
+            <!-- ids = -->        <value eval="[ref('stock_config_settings_amazon')]"/>
+
+            <!-- context = -->    <value eval="{}"/>
+
+        </function>
+
+    </data>
+</odoo>

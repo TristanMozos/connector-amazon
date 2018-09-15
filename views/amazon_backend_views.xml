@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_amazon_backend_tree" model="ir.ui.view">
+        <field name="name">Amazon backend</field>
+        <field name="model">amazon.backend</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Backend">
+                <field name="name"/>
+                <field name="seller"/>
+                <field name="region"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_backend_form" model="ir.ui.view">
+        <field name="name">amazon.backend.form</field>
+        <field name="model">amazon.backend</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                   <field name="name"/>
+                </group>
+                <group>
+                    <group><field name="region"/></group>
+                    <!--group><field name="automate_import_data"/></group-->
+                </group>
+                <group><field name="access_key"/></group>
+                <group><field name="key" password="True"/></group>
+                <group><field name="seller"/></group>
+                <group><field name="token" password="True"/></group>
+                <group><field name="developer"/></group>
+                <group><field name="import_sales_from_date"/></group>
+                <group><field name="import_updated_sales_from_date"/></group>
+                <group><field name="sale_prefix"/></group>
+                <group><field name="warehouse_id"/></group>
+                <group><field name="fba_warehouse_id"/></group>
+                <group><field name="marketplace_ids"/></group>
+                <footer>
+                    <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_backend" model="ir.actions.act_window">
+        <field name="name">Amazon Backends</field>
+        <field name="res_model">amazon.backend</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_backend_tree"/>
+    </record>
+
+</odoo>

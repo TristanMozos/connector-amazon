@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_amazon_order_tree" model="ir.ui.view">
+			<field name="name">Orders</field>
+			<field name="model">amazon.sale.order</field>
+			<field name="arch" type="xml">
+				<tree string="Orders" create="false" sum="total_amount">
+					<field name="backend_id" string="Name account" />
+					<field name="id_amazon_order" string="Order Id" />
+					<field name="order_status_id" string="Order status" />
+					<field name="date_purchase" string="Purchase date" />
+					<field name="sales_channel" string="Sale chanel" />
+					<field name="date_latest_ship" string="Latest ship date" />
+                    <field name="date_latest_delivery" string="Latest delivery date" />
+					<field name="total_amount" string="Total amount"/>
+                    <field name="order_fee" string="Fee"/>
+                    <field name="buyer_email" string="Buyer email"/>
+                    <field name="fullfillment_channel" string="Fullfillment channel"/>
+				</tree>
+			</field>
+		</record>
+
+    <record id="view_amazon_order_form" model="ir.ui.view">
+        <field name="name">amazon.sale.order.form</field>
+        <field name="model">amazon.sale.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="backend_id" string="Name account" /></group>
+                <group><field name="id_amazon_order" string="Order Id" /></group>
+                <group><field name="order_status_id" string="Order status" /></group>
+                <group><field name="date_purchase" string="Purchase date" /></group>
+                <group><field name="sales_channel" string="Sale chanel" /></group>
+                <group><field name="date_latest_ship" string="Lastest ship date" /></group>
+                <group><field name="total_amount" string="Total amount"/></group>
+                <group><field name="partner_id" string="Partner"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_order" model="ir.actions.act_window">
+        <field name="name">Amazon Orders</field>
+        <field name="res_model">amazon.sale.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_order_tree"/>
+    </record>
+
+
+
+</odoo>
