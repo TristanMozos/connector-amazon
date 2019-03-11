@@ -1,33 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="product_template_search_view_amazon_filter" model="ir.ui.view">
-        <field name="name">product.template.search.amazon</field>
-        <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_search_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//filter[@name='filter_to_purchase']" position="after">
-                <separator/>
-                <filter string="Amazon products" name="filter_amazon_products" domain="[('is_amazon_product', '=', True)]"/>
-                <filter string="Non Amazon products" name="filter_non_amazon_products" domain="[('is_amazon_product', '=', False)]"/>
-            </xpath>
-        </field>
-    </record>
-
-    <record id="supplier_info_quantity_supplier_form_inherit" model="ir.ui.view">
-        <field name="name">product.supplierinfo.quantity_supplier.view</field>
-        <field name="model">product.supplierinfo</field>
-        <field name="inherit_id" ref="product.product_supplierinfo_form_view"/>
-        <field name="arch" type="xml">
-            <field name="date_end" position="after">
-                <div>
-                    <field name="supplier_stock"/>
-                </div>
-                <div>
-                    <field name="get_supplier_stock"/>
-                </div>
+    <record id="view_partner_get_stock_supplier_form" model="ir.ui.view">
+            <field name="name">res.partner.purchase.get_stock_supplier.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="priority">36</field>
+            <!--field name="groups_id" eval="[(4, ref('base.group_multi_currency'))]"/-->
+            <field name="arch" type="xml">
+                <group name="purchase" position="inside">
+                    <field name="get_supplier_stock" attrs="{'invisible': [('supplier', '=', False)]}"/>
+                    <field name="automatic_export_products" attrs="{'invisible': [('supplier', '=', False)]}"/>
+                    <field name="backend_id" attrs="{'invisible':[('supplier','=',False),('automatic_export_products','=',False)], 'required':[('automatic_export_products','=',True)]}"/>
+                </group>
             </field>
-        </field>
     </record>
 
 </odoo>

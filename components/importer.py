@@ -33,7 +33,6 @@ _logger = logging.getLogger(__name__)
 
 class AmazonImporter(AbstractComponent):
     """ Base importer for Amazon """
-
     _name = 'amazon.importer'
     _inherit = ['base.importer', 'base.amazon.connector']
     _usage = 'record.importer'

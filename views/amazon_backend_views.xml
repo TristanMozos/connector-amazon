@@ -23,7 +23,6 @@
                 </group>
                 <group>
                     <group><field name="region"/></group>
-                    <!--group><field name="automate_import_data"/></group-->
                 </group>
                 <group><field name="access_key"/></group>
                 <group><field name="key" password="True"/></group>
@@ -34,10 +33,36 @@
                 <group><field name="import_updated_sales_from_date"/></group>
                 <group><field name="sale_prefix"/></group>
                 <group><field name="warehouse_id"/></group>
+                <group><field name="sqs_account_id"/></group>
+                <group><field name="stock_sync"/></group>
+                <group><field name="change_prices"/></group>
+                <group name="min_margin" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="min_margin"/></group>
+                <group name="max_margin" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="max_margin"/></group>
+                <group name="units_to_change" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="units_to_change"/></group>
+                <group name="type_unit_to_change" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="type_unit_to_change"/></group>
                 <group><field name="fba_warehouse_id"/></group>
                 <group><field name="marketplace_ids"/></group>
+                <group>
+                    <group>
+                        <field name="shipping_template_ids"/>
+                    </group>
+                    <group>
+                        <button string="Import templates"
+                                    type="object"
+                                    name="get_templates_from_products"
+                                    class="oe_highlight"/>
+                    </group>
+                </group>
                 <footer>
-                    <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
+                    </group>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_import_order)d" string="Import Order" type="action" class="oe_highlight"/>
+                    </group>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_update_orders)d" string="Update Orders" type="action" class="oe_highlight"/>
+                    </group>
                 </footer>
             </form>
         </field>

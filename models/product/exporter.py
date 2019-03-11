@@ -6,57 +6,66 @@ from odoo import _
 from odoo.addons.component.core import Component
 
 
-class StateExporter(Component):
-    _name = 'magento.sale.state.exporter'
-    _inherit = 'base.exporter'
-    _usage = 'sale.state.exporter'
-    _apply_on = 'magento.sale.order'
+class ProductStockExporter(Component):
+    _name = 'amazon.product.stock.exporter'
+    _inherit = 'amazon.exporter'
+    _usage = 'amazon.product.stock.export'
+    _apply_on = ['amazon.product.product']
 
-    ORDER_STATUS_MAPPING = {  # used in connector_magento_order_comment
-        'draft': 'pending',
-        'manual': 'processing',
-        'progress': 'processing',
-        'shipping_except': 'processing',
-        'invoice_except': 'processing',
-        'done': 'complete',
-        'cancel': 'canceled',
-        'waiting_date': 'holded'
-    }
+    def run(self, prod_stock):
+        """ Change the stock on Amazon.
 
-    def run(self, binding, allowed_states=None, comment=None, notify=False):
-        """ Change the status of the sales order on Magento.
-
-        It adds a comment on Magento with a status.
-        Sales orders on Magento have a state and a status.
-        The state is related to the sale workflow, and the status can be
-        modified liberaly.  We change only the status because Magento
-        handle the state itself.
-
-        When a sales order is modified, if we used the ``sales_order.cancel``
-        API method, we would not be able to revert the cancellation.  When
-        we send ``cancel`` as a status change with a new comment, we are still
-        able to change the status again and to create shipments and invoices
-        because the state is still ``new`` or ``processing``.
-
-        :param binding: the binding record of the sales order
-        :param allowed_states: list of Odoo states that are allowed
-                               for export. If empty, it will export any
-                               state.
-        :param comment: Comment to display on Magento for the state change
-        :param notify: When True, Magento will send an email with the
-                       comment
+        :param records: list of dictionaries of products with structure [{'sku': sku1, 'Quantity': 3, 'id_mws': market_id},{...}]
         """
-        state = binding.state
-        if allowed_states and state not in allowed_states:
-            return _('State %s is not exported.') % state
-        external_id = self.binder.to_external(binding)
-        if not external_id:
-            return _('Sale is not linked with a Magento sales order')
-        magento_state = self.ORDER_STATUS_MAPPING[state]
-        record = self.backend_adapter.read(external_id)
-        if record['status'] == magento_state:
-            return _('Magento sales order is already '
-                     'in state %s') % magento_state
-        self.backend_adapter.add_comment(external_id, magento_state,
-                                         comment=comment,
-                                         notify=notify)
+        feed_binding_model = self.env['amazon.feed']
+        feed_binding_model.export_batch(backend=self.backend_record,
+                                        filters={'method':'submit_stock_update', 'arguments':[prod_stock]})
+
+
+class ProductPriceExporter(Component):
+    _name = 'amazon.product.price.exporter'
+    _inherit = 'amazon.exporter'
+    _usage = 'amazon.product.price.export'
+    _apply_on = 'amazon.product.product'
+
+    def run(self, records):
+        """ Change the prices on Amazon.
+        :param records: list of dictionaries of products with structure [{'sku': sku1, 'price': 3.99, 'currency': 'EUR', 'id_mws': market_id},{...}]
+        """
+        feed_exporter = self.component(model_name='amazon.feed')
+        # feed_exporter.export_batch(backend=self.backend_record, filters=prod_stock) # Prod version
+        feed_exporter.export_batch(backend=self.backend_record,
+                                   filters={'method':'submit_price_update',
+                                            'arguments':records[0]})  # Test one product
+
+
+class ProductStockPriceExporter(Component):
+    _name = 'amazon.product.stock.price.exporter'
+    _inherit = 'amazon.exporter'
+    _usage = 'amazon.product.stock.price.export'
+    _apply_on = 'amazon.product.product'
+
+    def run(self, records):
+        """ Change the stock, prices and handling time on Amazon.
+        :param records: list of dictionaries of products with structure [{'sku': sku1, 'price': 3.99, 'currency': 'EUR', 'id_mws': market_id},{...}]
+        """
+        feed_exporter = self.env['amazon.feed']
+        feed_exporter.export_batch(backend=self.backend_record,
+                                   filters={'method':'submit_stock_price_update',
+                                            'arguments':records})  # Test one product
+
+
+class ProductProductExporter(Component):
+    _name = 'amazon.product.product.exporter'
+    _inherit = 'base.exporter'
+    _usage = 'amazon.product.export'
+    _apply_on = 'amazon.product.product'
+
+    def run(self, records):
+        """ Change the prices on Amazon.
+        :param records: list of dictionaries of products with structure
+        """
+        feed_exporter = self.env['amazon.feed']
+        return feed_exporter.export_batch(backend=self.backend_record,
+                                          filters={'method':'submit_add_inventory_request',
+                                                   'arguments':[records]})

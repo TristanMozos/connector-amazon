@@ -46,7 +46,7 @@ Configuration
 
 To configure this module, you need to:
 
-#. Go to Connector-->Amazon-->Account
+#. Go to Connector-->Amazon-->Backend
 #. Add account's credentials. When the account is created the inventory will be imported
 #. The module is start up to import orders from Amazon
 
@@ -129,17 +129,21 @@ To contribute to this module, please visit https://github.com/TristanMozos/
     'data':[
         # 'security/ir.model.access.csv',
         'wizards/wizard_import_orders.xml',
+        'wizards/wizard_export_products.xml',
         'views/amazon_config_views.xml',
         'views/amazon_backend_views.xml',
         'views/amazon_order_views.xml',
         'views/amazon_partner_views.xml',
         'views/amazon_product_views.xml',
         'views/amazon_return_views.xml',
+        'views/amazon_feed_views.xml',
         'views/connector_amazon_menu.xml',
+        'views/product_views.xml',
+        'views/res_partner_views.xml',
+        'data/amazon_scheduler.xml',
         'data/amazon_connector_data.xml',
         'data/amazon_connector_config_settings.xml',
         'data/quota_mws_data.xml',
-        # 'data/amazon.config.product.category.csv',
     ],
     # only loaded in demonstration mode
     'demo':[

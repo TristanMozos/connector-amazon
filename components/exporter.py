@@ -31,29 +31,50 @@ In addition to its export job, an exporter has to:
 
 """
 
+class BatchExporter(AbstractComponent):
+    """ The role of a BatchExporter is to send a list of
+    items to export, then it can either export them directly or delay
+    the export of each item separately.
+    """
 
-class AmazonBaseExporter(AbstractComponent):
+    _name = 'amazon.batch.exporter'
+    _inherit = ['base.exporter', 'base.amazon.connector']
+    _usage = 'batch.exporter'
+
+    def run(self, records=None):
+        """ Run the synchronization """
+        for record_id in records:
+            self._export_record(record_id)
+
+    def _export_record(self, external_id):
+        """ Import a record directly or delay the import of the record.
+
+        Method to implement in sub-classes.
+        """
+        raise NotImplementedError
+
+class AmazonExporter(AbstractComponent):
     """ Base exporter for Amazon """
 
-    _name = 'amazon.base.exporter'
+    _name = 'amazon.exporter'
     _inherit = ['base.exporter', 'base.amazon.connector']
     _usage = 'record.exporter'
 
     def __init__(self, working_context):
-        super(AmazonBaseExporter, self).__init__(working_context)
+        super(AmazonExporter, self).__init__(working_context)
         self.binding = None
         self.external_id = None
 
-    def _delay_import(self):
-        """ Schedule an import of the record.
+    def _delay_export(self):
+        """ Schedule an export of the record.
 
-        Adapt in the sub-classes when the model is not imported
-        using ``import_record``.
+        Adapt in the sub-classes when the model is not exported
+        using ``export_record``.
         """
         # force is True because the sync_date will be more recent
         # so the import would be skipped
         assert self.external_id
-        self.binding.with_delay().import_record(self.backend_record,
+        self.binding.with_delay().export_record(self.backend_record,
                                                 self.external_id,
                                                 force=True)
 
@@ -108,24 +129,9 @@ class AmazonBaseExporter(AbstractComponent):
         self._after_export()
         return result
 
-    def _run(self):
-        """ Flow of the synchronization, implemented in inherited classes"""
-        raise NotImplementedError
-
     def _after_export(self):
         """ Can do several actions after exporting a record on amazon """
         pass
-
-
-class AmazonExporter(AbstractComponent):
-    """ A common flow for the exports to Amazon """
-
-    _name = 'amazon.exporter'
-    _inherit = 'amazon.base.exporter'
-
-    def __init__(self, working_context):
-        super(AmazonExporter, self).__init__(working_context)
-        self.binding = None
 
     def _lock(self):
         """ Lock the binding record.
@@ -264,9 +270,9 @@ class AmazonExporter(AbstractComponent):
                 # odoo_id) should exist on the binding model
                 with self._retry_unique_violation():
                     binding = (self.env[binding_model]
-                        .with_context(connector_no_export=True)
-                        .sudo()
-                        .create(bind_values))
+                               .with_context(connector_no_export=True)
+                               .sudo()
+                               .create(bind_values))
                     # Eager commit to avoid having 2 jobs
                     # exporting at the same time. The constraint
                     # will pop if an other job already created

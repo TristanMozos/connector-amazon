@@ -15,49 +15,43 @@ class ReportBatchImporter(Component):
     """ Import the Amazon Reports.
 
     """
-    _name = 'amazon.report.batch.importer'
+    _name = 'amazon.feed.batch.importer'
     _inherit = 'amazon.delayed.batch.importer'
-    _apply_on = 'amazon.report'
+    _apply_on = 'amazon.feed'
 
     def run(self, filters=None):
         """ Run the synchronization """
         result = None
         method = filters['method']
         assert method
-        if method == 'submit_inventory_request':
-            result = self.backend_adapter.submit_report(report_name=method, filters=None)
-            _logger.info('submit report amazon returned id %s', result)
-        elif method == 'get_inventory':
+        # {'method':'analize_product_exports', 'feed_ids':ids, 'products':list_products, 'backend':self.backend_id}
+        if method == 'analize_product_exports':
+            # TODO analize feed report from filters['feed_ids']
             try:
                 assert filters
-                products = self.backend_adapter.get_report(filters)
+                backend = filters['backend']
+                products = filters['products']
+                # On the products list, it is possible that there are one same product per each marketplace
                 if products:
-                    _logger.info('search for amazon products %s returned %s',
-                                 filters, products.keys())
+                    # To prevent duplicates sku, we are going to save on a aux dict the sku values to import
+                    aux_dict = {}
                     product_binding_model = self.env['amazon.product.product']
-                    for product in products.iteritems():
-                        delayable = product_binding_model.with_delay(priority=5, eta=datetime.now())
-                        delayable.import_record(self.backend_record, product)
+                    for product in products:
+                        if not aux_dict.get(product['sku']):
+                            delayable = product_binding_model.with_delay(priority=5, eta=datetime.now())
+                            delayable.import_record(backend, product['sku'])
+                            aux_dict[product['sku']] = True
                 else:
                     _logger.info('search for amazon products %s has returned nothing',
                                  filters, products.keys())
             except AssertionError:
                 _logger.error('There aren\'t report ids parameters for %s', method)
                 raise
-        elif method == 'submit_sales_request':
-            result = self.backend_adapter.submit_report(report_name=method, filters=filters)
-        elif method == 'get_sales':
-            sales = self.backend_adapter.get_report(arguments=filters)
-            _logger.info('get report of saleorders returned %s', sales.keys())
-            sale_binding_model = self.env['amazon.sale.order']
-            for sale in sales.iteritems():
-                delayable = sale_binding_model.with_delay(priority=5, eta=datetime.now())
-                delayable.import_record(self.backend_record, sale)
 
         return result
 
 
 class ReportImporter(Component):
-    _name = 'amazon.report.importer'
+    _name = 'amazon.feed.importer'
     _inherit = 'amazon.importer'
-    _apply_on = ['amazon.report']
+    _apply_on = ['amazon.feed']
