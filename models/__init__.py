@@ -10,3 +10,7 @@ from . import sale_order
 from . import return_order
 from . import report
 from . import partner
+from . import feeds
+from . import stock
+from . import fix_data
+from . import account_tax

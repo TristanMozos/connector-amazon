@@ -1,22 +1,23 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# Basic interface to Amazon MWS
-# Based on http://code.google.com/p/amazon-mws-python
+# © 2018 Halltic eSolutions S.L.
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# Basic interface to Amazon MWS on Odoo
+# Forked and modified code of https://github.com/czpython/python-amazon-mws
 #
 
+from time import gmtime, strftime
 import urllib
 import hashlib
 import hmac
 import base64
-import utils
 import re
+
+import utils
 
 try:
     from xml.etree.ElementTree import ParseError as XMLError
 except ImportError:
     from xml.parsers.expat import ExpatError as XMLError
-from time import strftime, gmtime
 
 from requests import request
 from requests.exceptions import HTTPError
@@ -169,21 +170,23 @@ class MWS(object):
             'AWSAccessKeyId':self._backend.access_key,
             self.ACCOUNT_TYPE:self._backend.seller,
             'SignatureVersion':'2',
-            'Timestamp':self.get_timestamp(),
+            'Timestamp':utils.get_timestamp(),
             'Version':self.version,
             'SignatureMethod':'HmacSHA256',
         }
         if self._backend.token:
             params['MWSAuthToken'] = self._backend.token
         params.update(extra_data)
+        pool = self._backend.pool.get('amazon.control.request')
+        env = self._backend.env['amazon.control.request']
         try:
-            pool = self._backend.pool.get('amazon.control.request')
-            env = self._backend.env['amazon.control.request']
-            pool.use_quota_if_avaiable(env, request_name=extra_data.get('Action'))
-        except AssertionError, e:
-            error = MWSError(str(e.response.text))
-            error.response = e.response
+            pool.use_quota_if_avaiable(env, request_name=extra_data.get('Action'), backend_id=self._backend.id)
+        except AssertionError as ae:
+            error = MWSError(str(ae.response.text))
+            error.response = ae.response
             raise error
+        except Exception as e:
+            raise e
 
         request_description = '&'.join(['%s=%s' % (k, urllib.quote(params[k], safe='-_.~').encode('utf-8')) for k in sorted(params)])
         signature = self.calc_signature(method, request_description)
@@ -210,9 +213,11 @@ class MWS(object):
             except XMLError:
                 parsed_response = DataWrapper(data, response.headers)
 
-        except HTTPError, e:
-            error = MWSError(str(e.response.text))
-            error.response = e.response
+        except HTTPError as httpe:
+            error = MWSError(str(httpe.response.text))
+            error.response = httpe.response
+            if 'RequestThrottled' in error.response.text:
+                raise pool.throw_retry_exception_for_throttled(env, request_name=extra_data.get('Action'), backend_id=self._backend.id)
             raise error
 
         # Store the response object in the parsed_response for quick access
@@ -233,12 +238,6 @@ class MWS(object):
         sig_data = method + '\n' + self.domain.replace('https://', '').lower() + '\n' + self.uri + '\n' + request_description
         return base64.b64encode(hmac.new(str(self._backend.key), sig_data, hashlib.sha256).digest())
 
-    def get_timestamp(self):
-        """
-            Returns the current timestamp in proper format.
-        """
-        return strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
-
     def enumerate_param(self, param, values):
         """
             Builds a dictionary of an enumerated parameter.
@@ -254,10 +253,10 @@ class MWS(object):
         """
         params = {}
         if values is not None:
-            if not param.endswith('.'):
+            if not param.endswith('.') and '%s' not in param:
                 param = "%s." % param
             for num, value in enumerate(values):
-                params['%s%d' % (param, (num + 1))] = value
+                params['%s%d' % (param, (num + 1)) if '%s' not in param else param % str(num + 1)] = value
         return params
 
 
@@ -429,6 +428,10 @@ class Orders(MWS):
         return self.make_request(data)
 
     def get_order(self, amazon_order_ids):
+        """
+        :param amazon_order_ids: list of order ids, max 50
+        :return:
+        """
         data = dict(Action='GetOrder')
         data.update(self.enumerate_param('AmazonOrderId.Id.', amazon_order_ids))
         return self.make_request(data)
@@ -555,19 +558,42 @@ class Products(MWS):
         data.update(self.enumerate_param('ASINList.ASIN.', asins))
         return self.make_request(data)
 
-    def get_my_fee_estimate(self, marketplaceid, type, id, price, is_amazon_fulfilled=False):
+    def get_my_fee_estimate(self, marketplaceids, types, ids, prices, currency_prices, shipping_prices=False, currency_ship_prices=False,
+                            is_amazon_fulfilleds=[False]):
         """ Returns the estimated fees for a list of products, based on a list of
             product identifier values (ASIN, SellerSKU)
             The identifier type is case sensitive.
             Added in Fourth Release, API version 2011-10-01
         """
         data = dict(Action='GetMyFeesEstimate')
-        # TODO Finish the parameters to can submit a request for the fee
-        data.update(self.enumerate_param('FeesEstimateRequestList.FeesEstimateRequest.MarketplaceId', [marketplaceid]))
-        data.update(self.enumerate_param('FeesEstimateRequestList.FeesEstimateRequest.IdType', [type]))
-        data.update(self.enumerate_param('FeesEstimateRequestList.FeesEstimateRequest.Identifier', [id]))
-        data.update(self.enumerate_param('FeesEstimateRequestList.FeesEstimateRequest.IsAmazonFulfilled', [is_amazon_fulfilled]))
-        return self.make_request(data)
+        list_data = []
+
+        if len(marketplaceids) == len(types) == len(ids) == len(prices):
+            i = 0
+            t = len(marketplaceids)
+            dict_data = {}
+            while i < t:
+                dict_data['MarketplaceId'] = marketplaceids[i]
+                dict_data['IdType'] = types[i]
+                dict_data['IdValue'] = ids[i]
+                dict_data['Identifier'] = strftime("%Y%m%d%H%M%S", gmtime()) + '-||-' + marketplaceids[i] + '-||-' + types[i] + '-||-' + ids[i]
+                dict_data['PriceToEstimateFees.ListingPrice.Amount'] = prices[i]
+                dict_data['PriceToEstimateFees.ListingPrice.CurrencyCode'] = currency_prices[i]
+                if shipping_prices:
+                    dict_data['PriceToEstimateFees.Shipping.Amount'] = shipping_prices[i]
+                    dict_data['PriceToEstimateFees.Shipping.CurrencyCode'] = currency_ship_prices[i]
+                if is_amazon_fulfilleds and isinstance(is_amazon_fulfilleds, list) and len(marketplaceids) == len(is_amazon_fulfilleds):
+                    dict_data['IsAmazonFulfilled'] = is_amazon_fulfilleds[i]
+                else:
+                    dict_data['IsAmazonFulfilled'] = False
+                list_data.append(dict_data)
+                i += 1
+
+            param = 'FeesEstimateRequestList.FeesEstimateRequest'
+            data.update(utils.enumerate_keyed_param(param, list_data))
+            return self.make_request(data)
+
+        raise MWSError('Missing required: the lenght lists of markeplace, type, id and price itsn\'t equal.')
 
 
 class Sellers(MWS):
@@ -668,4 +694,83 @@ class Recommendations(MWS):
 
         data = dict(Action="ListRecommendationsByNextToken",
                     NextToken=token)
+        return self.make_request(data, "POST")
+
+
+class Subscriptions(MWS):
+    """ Amazon MWS Subscriptions API """
+
+    URI = '/Subscriptions/2013-07-01'
+    VERSION = '2013-07-01'
+    NS = "{https://mws.amazonservices.com/Subscriptions/2013-07-01}"
+
+    def register_destination(self, marketplaceid, delivery_channel='SQS', destination=['sqsQueueUrl'], value=[]):
+        data = dict(Action='RegisterDestination',
+                    MarketplaceId=marketplaceid)
+        data['Destination.DeliveryChannel'] = delivery_channel
+        data.update(self.enumerate_param('Destination.AttributeList.member.%s.Key', destination))
+        data.update(self.enumerate_param('Destination.AttributeList.member.%s.Value', value))
+
+        return self.make_request(data, "POST")
+
+    def list_registered_destinations(self, marketplaceid):
+        data = dict(Action='ListRegisteredDestinations',
+                    MarketplaceId=marketplaceid)
+
+        return self.make_request(data, "POST")
+
+    def delete_destination(self, marketplaceid, delivery_channel='SQS', destination=['sqsQueueUrl'], value=[]):
+        data = dict(Action='DeregisterDestination',
+                    MarketplaceId=marketplaceid)
+        data['Destination.DeliveryChannel'] = delivery_channel
+        data.update(self.enumerate_param('Destination.AttributeList.member.%s.Key', destination))
+        data.update(self.enumerate_param('Destination.AttributeList.member.%s.Value', value))
+
+        return self.make_request(data, "POST")
+
+    def create_subscription(self, marketplaceid, notification_type, delivery_channel='SQS', destination=['sqsQueueUrl'], value=[], is_enabled=True):
+        """
+        Method to create suscription
+        :param marketplaceid:
+        :param notification_type: AnyOfferChanged, FulfillmentOrderStatus and FeePromotion
+        :param delivery_channel: SQS
+        :param destination: sqsQueueUrl
+        :param value: url of SQS to get the notifications
+        :param is_enabled: True or False
+        :return:
+        """
+        data = dict(Action='CreateSubscription',
+                    MarketplaceId=marketplaceid,
+                    IsEnabled=str(is_enabled).lower())
+        data['Subscription.NotificationType'] = notification_type
+        data['Subscription.Destination.DeliveryChannel'] = delivery_channel
+        data.update(self.enumerate_param('Subscription.Destination.AttributeList.member.%s.Key', destination))
+        data.update(self.enumerate_param('Subscription.Destination.AttributeList.member.%s.Value', value))
+
+        return self.make_request(data, "POST")
+
+    def list_subscriptions(self, marketplaceid):
+        data = dict(Action='ListSubscriptions',
+                    MarketplaceId=marketplaceid)
+
+        return self.make_request(data, "POST")
+
+    def get_subscription(self, marketplaceid, notification_type, delivery_channel='SQS', destination=['sqsQueueUrl'], value=[]):
+        """
+        Method to create suscription
+        :param marketplaceid:
+        :param notification_type: AnyOfferChanged, FulfillmentOrderStatus and FeePromotion
+        :param delivery_channel: SQS
+        :param destination: sqsQueueUrl
+        :param value: url of SQS to get the notifications
+        :param is_enabled: True or False
+        :return:
+        """
+        data = dict(Action='GetSubscription',
+                    MarketplaceId=marketplaceid)
+        data['NotificationType'] = notification_type
+        data['Destination.DeliveryChannel'] = delivery_channel
+        data.update(self.enumerate_param('Destination.AttributeList.member.%s.Key', destination))
+        data.update(self.enumerate_param('Destination.AttributeList.member.%s.Value', value))
+
         return self.make_request(data, "POST")

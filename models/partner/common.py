@@ -5,11 +5,10 @@
 # This project is based on connector-magneto, developed by Camptocamp SA
 
 import logging
-from collections import defaultdict
 
 from odoo import models, fields, api
 from odoo.addons.component.core import Component
-from odoo.addons.queue_job.job import job, related_action
+from odoo.addons.queue_job.job import job
 
 _logger = logging.getLogger(__name__)
 
@@ -50,3 +49,8 @@ class ResPartner(models.Model):
         inverse_name='odoo_id',
         string='Amazon Bindings',
     )
+    get_supplier_stock = fields.Selection(selection=[('1', 'Yes'),
+                                                     ('0', 'No'), ])
+
+    automatic_export_products = fields.Boolean('Automatic export new products to Amazon?', default=False)
+    backend_id = fields.Many2one('amazon.backend')

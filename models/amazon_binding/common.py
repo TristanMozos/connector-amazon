@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api, models, fields
+from odoo.addons.queue_job.exception import FailedJobError, RetryableJobError
 from odoo.addons.queue_job.job import job, related_action
 
 
@@ -38,32 +39,46 @@ class AmazonBinding(models.AbstractModel):
         """ Prepare the import of records modified on Amazon """
         if filters is None:
             filters = {}
-        with backend.work_on(self._name) as work:
-            importer = work.component(usage='batch.importer')
-            return importer.run(filters=filters)
+
+        try:
+            with backend.work_on(self._name) as work:
+                importer = work.component(usage='batch.importer')
+                return importer.run(filters=filters)
+        except Exception as e:
+            return e
+
+    @job(default_channel='root.amazon')
+    @api.model
+    def export_batch(self, backend, filters=None):
+        """ Prepare the export of records on Amazon """
+        if filters is None:
+            filters = {}
+        try:
+            with backend.work_on(self._name) as work:
+                exporter = work.component(usage='batch.exporter')
+                return exporter.run(filters=filters)
+        except Exception as e:
+            return e
 
     @job(default_channel='root.amazon')
     @api.model
     def import_record(self, backend, external_id, force=False):
         """ Import a Amazon record """
-        with backend.work_on(self._name) as work:
-            importer = work.component(usage='record.importer')
-            return importer.run(external_id, force=False)
+        try:
+            with backend.work_on(self._name) as work:
+                importer = work.component(usage='record.importer')
+                return importer.run(external_id, force=False)
+        except Exception as e:
+            return e
 
     @job(default_channel='root.amazon')
-    @related_action(action='related_action_unwrap_binding')
     @api.multi
     def export_record(self, fields=None):
         """ Export a record on Amazon """
         self.ensure_one()
         with self.backend_id.work_on(self._name) as work:
             exporter = work.component(usage='record.exporter')
-            return exporter.run(self, fields)
-
-    @job(default_channel='root.amazon')
-    @related_action(action='related_action_amazon_link')
-    def export_delete_record(self, backend, external_id):
-        """ Delete a record on Amazon """
-        with backend.work_on(self._name) as work:
-            deleter = work.component(usage='record.exporter.deleter')
-            return deleter.run(external_id)
+            try:
+                return exporter.run(self, fields)
+            except Exception as e:
+                return e

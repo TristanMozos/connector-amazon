@@ -1,61 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="product_normal_form_view" model="ir.ui.view">
-        <field name="name">product.product.form</field>
-        <field name="model">product.product</field>
-        <field name="inherit_id" ref="connector_base_product.product_normal_form_view"/>
+    <record id="product_template_search_view_amazon_filter" model="ir.ui.view">
+        <field name="name">product.template.search.amazon</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
         <field name="arch" type="xml">
-            <page name="connector" position="attributes">
-                <attribute name="invisible">0</attribute>
-            </page>
-            <page name="connector" position="inside">
-                <group string="Amazon Bindings">
-                    <field name="amazon_bind_ids" nolabel="1">
-                        <tree>
-                            <field name="backend_id"/>
-                        </tree>
-                    </field>
-                </group>
-            </page>
+            <xpath expr="//filter[@name='filter_to_purchase']" position="after">
+                <separator/>
+                <filter string="Amazon products" name="filter_amazon_products" domain="[('is_amazon_product', '=', True)]"/>
+                <filter string="Non Amazon products" name="filter_non_amazon_products" domain="[('is_amazon_product', '=', False)]"/>
+            </xpath>
         </field>
     </record>
 
-    <record id="view_amazon_product_form" model="ir.ui.view">
-        <field name="name">amazon.product.product.form</field>
-        <field name="model">amazon.product.product</field>
+    <record id="supplier_info_quantity_supplier_form_inherit" model="ir.ui.view">
+        <field name="name">product.supplierinfo.quantity_supplier.view</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="inherit_id" ref="product.product_supplierinfo_form_view"/>
         <field name="arch" type="xml">
-            <form string="Amazon Product">
-                <group>
-                    <field name="backend_id"/>
-                    <field name="external_id"/>
-                    <field name="created_at" readonly="1"/>
-                    <field name="updated_at" readonly="1"/>
-                </group>
-                <group string="Inventory Options">
-                    <field name="no_stock_sync"/>
-                    <field name="manage_stock"/>
-                    <field name="backorders"/>
-                    <div class="oe_inline">
-                        <label for="amazon_qty" class="oe_inline" />
-                        <field name="amazon_qty" readonly="1" class="oe_inline"
-                            nolabel="1"/>
-                        <button name="recompute_amazon_qty" string="(recompute)"
-                            class="oe_link oe_inline" type="object"/>
-                    </div>
-                </group>
-            </form>
-        </field>
-    </record>
-
-    <record id="view_amazon_product_tree" model="ir.ui.view">
-        <field name="name">amazon.product.product.tree</field>
-        <field name="model">amazon.product.product</field>
-        <field name="arch" type="xml">
-            <tree string="Amazon Product">
-                <field name="backend_id"/>
-            </tree>
+            <field name="date_end" position="after">
+                <div>
+                    <field name="supplier_stock"/>
+                </div>
+                <div>
+                    <field name="get_supplier_stock"/>
+                </div>
+            </field>
         </field>
     </record>
 
 </odoo>
+

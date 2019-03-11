@@ -3,7 +3,7 @@
 
     <record id="wizard_import_orders_form" model="ir.ui.view">
         <field name="name" >Wizard Import Orders</field>
-        <field name="model" >amazon.order.import.wizard</field>
+        <field name="model" >amazon.orders.import.wizard</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
@@ -24,12 +24,68 @@
         </field>
     </record>
 
+    <record id="wizard_update_orders_form" model="ir.ui.view">
+        <field name="name" >Wizard Update Orders</field>
+        <field name="model" >amazon.orders.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="date_init"></field>
+                        <field name="date_end"></field>
+                    </group>
+                    <footer>
+                        <button special="cancel" string="Cancelar"/>
+                        <button name="update_orders"
+                                type="object"
+                                string="Import"
+                                class="oe_highlight"/>
+                    </footer>
+               </sheet>
+            </form>
+        </field>
+    </record>
 
+    <record id="wizard_import_order_form" model="ir.ui.view">
+        <field name="name" >Wizard Import Order by Id</field>
+        <field name="model" >amazon.order.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="id_order"></field>
+                    </group>
+                    <footer>
+                        <button special="cancel" string="Cancelar"/>
+                        <button name="import_order"
+                                type="object"
+                                string="Import"
+                                class="oe_highlight"/>
+                    </footer>
+               </sheet>
+            </form>
+        </field>
+    </record>
+
+
+
+    <record id="action_view_wizard_amazon_update_orders" model="ir.actions.act_window">
+        <field name="name">Wizard to update orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">amazon.orders.import.wizard</field>
+        <field name="src_model">amazon.sale.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="wizard_update_orders_form"/>
+        <field name="target">new</field>
+        <field name="multi">True</field>
+        <field name="key2">client_action_multi</field>
+    </record>
 
     <record id="action_view_wizard_amazon_import_orders" model="ir.actions.act_window">
         <field name="name">Wizard to import orders</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">amazon.order.import.wizard</field>
+        <field name="res_model">amazon.orders.import.wizard</field>
         <field name="src_model">amazon.sale.order</field>
         <field name="view_type">form</field>
         <field name="view_mode">form</field>
@@ -39,6 +95,18 @@
         <field name="key2">client_action_multi</field>
     </record>
 
+    <record id="action_view_wizard_amazon_import_order" model="ir.actions.act_window">
+        <field name="name">Wizard to import orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">amazon.order.import.wizard</field>
+        <field name="src_model">amazon.sale.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="wizard_import_order_form"/>
+        <field name="target">new</field>
+        <field name="multi">True</field>
+        <field name="key2">client_action_multi</field>
+    </record>
 
 
 </odoo>

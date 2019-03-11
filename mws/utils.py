@@ -9,6 +9,7 @@ Borrowed from https://github.com/timotheus/ebaysdk-python
 
 import xml.etree.ElementTree as ET
 import re
+from time import strftime, gmtime
 
 
 class object_dict(dict):
@@ -101,3 +102,61 @@ class xml2dict(object):
         t = ET.fromstring(s)
         root_tag, root_tree = self._namespace_split(t.tag, self._parse_node(t))
         return object_dict({root_tag:root_tree})
+
+
+def get_timestamp():
+    """
+        Returns the current timestamp in proper format.
+    """
+    return strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
+
+
+def enumerate_keyed_param(param, values):
+    """
+    Given a param string and a dict of values, returns a flat dict of keyed, enumerated params.
+    Each dict in the values list must pertain to a single item and its data points.
+
+    Example:
+        param = "InboundShipmentPlanRequestItems.member"
+        values = [
+            {'SellerSKU': 'Football2415',
+            'Quantity': 3},
+            {'SellerSKU': 'TeeballBall3251',
+            'Quantity': 5},
+            ...
+        ]
+
+    Returns:
+        {
+            'InboundShipmentPlanRequestItems.member.1.SellerSKU': 'Football2415',
+            'InboundShipmentPlanRequestItems.member.1.Quantity': 3,
+            'InboundShipmentPlanRequestItems.member.2.SellerSKU': 'TeeballBall3251',
+            'InboundShipmentPlanRequestItems.member.2.Quantity': 5,
+            ...
+        }
+    """
+    if not values:
+        # Shortcut for empty values
+        return {}
+    if not param.endswith('.'):
+        # Ensure the enumerated param ends in '.'
+        param += '.'
+    if not isinstance(values, (list, tuple, set)):
+        # If it's a single value, convert it to a list first
+        values = [values, ]
+    for val in values:
+        # Every value in the list must be a dict.
+        if not isinstance(val, dict):
+            # Value is not a dict: can't work on it here.
+            raise ValueError((
+                "Non-dict value detected. "
+                "`values` must be a list, tuple, or set; containing only dicts."
+            ))
+    params = {}
+    for idx, val_dict in enumerate(values):
+        # Build the final output.
+        params.update({
+            '{param}{idx}.{key}'.format(param=param, idx=idx + 1, key=k):v
+            for k, v in val_dict.items()
+        })
+    return params

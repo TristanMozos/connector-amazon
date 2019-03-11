@@ -22,8 +22,6 @@ class AmazonReport(models.Model):
     @api.model
     def import_batch(self, backend, filters=None):
         _super = super(AmazonReport, self)
-        import wdb
-        wdb.set_trace()
         return _super.import_batch(backend, filters=filters)
 
 

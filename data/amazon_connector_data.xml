@@ -2,45 +2,6 @@
 <odoo>
     <data noupdate="1">
 
-        <record model="ir.cron" id="ir_cron_amz_import_sale_orders" forcecreate="True">
-            <field name="name">Amazon - Import Sales Orders</field>
-            <field eval="False" name="active"/>
-            <field name="user_id" ref="base.user_root"/>
-            <field name="interval_number">10</field>
-            <field name="interval_type">minutes</field>
-            <field name="numbercall">-1</field>
-            <field eval="False" name="doall"/>
-            <field eval="'amazon.backend'" name="model"/>
-            <field eval="'_scheduler_import_sale_orders'" name="function"/>
-            <field eval="'()'" name="args"/>
-        </record>
-
-        <record model="ir.cron" id="ir_cron_amz_import_product_product" forcecreate="True">
-            <field name="name">Amazon -  Import Products</field>
-            <field eval="False" name="active"/>
-            <field name="user_id" ref="base.user_root"/>
-            <field name="interval_number">12</field>
-            <field name="interval_type">hours</field>
-            <field name="numbercall">-1</field>
-            <field eval="False" name="doall"/>
-            <field eval="'amazon.backend'" name="model"/>
-            <field eval="'_scheduler_import_product_product'" name="function"/>
-            <field eval="'()'" name="args"/>
-        </record>
-
-        <record model="ir.cron" id="ir_cron_update_product_prices" forcecreate="True">
-            <field name="name">Amazon -  Update Prices</field>
-            <field eval="False" name="active"/>
-            <field name="user_id" ref="base.user_root"/>
-            <field name="interval_number">5</field>
-            <field name="interval_type">minutes</field>
-            <field name="numbercall">-1</field>
-            <field eval="False" name="doall"/>
-            <field eval="'amazon.backend'" name="model"/>
-            <field eval="'_scheduler_update_product_prices'" name="function"/>
-            <field eval="'()'" name="args"/>
-        </record>
-
         <!-- Amazon sales team to crm -->
 		<record id="amazon_crm_team" model='crm.team'>
             <field name="name">Amazon Sales</field>
@@ -169,6 +130,7 @@
 			<field name="id_mws">A1RKKUPIHCS9HS</field>
             <field search="[('code','=','ES')]" model='res.country' name='country_id'/>
             <field search="[('code','=','es_ES')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
             <field name="sequence">10</field>
         </record>
 		
@@ -177,6 +139,7 @@
             <field name="id_mws">A13V1IB3VIYZZH</field>
             <field search="[('code','=','FR')]" model='res.country' name='country_id'/>
             <field search="[('code','=','fr_FR')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
             <field name="sequence">20</field>
         </record>
 		
@@ -185,6 +148,7 @@
             <field name="id_mws">A1PA6795UKMFR9</field>
             <field search="[('code','=','DE')]" model='res.country' name='country_id'/>
             <field search="[('code','=','de_DE')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
             <field name="sequence">30</field>
         </record>
 		
@@ -193,6 +157,7 @@
             <field name="id_mws">A1F83G8C2ARO7P</field>
             <field search="[('code','=','GB')]" model='res.country' name='country_id'/>
             <field search="[('code','=','en_GB')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
             <field name="sequence">40</field>
         </record>
 		
@@ -201,6 +166,7 @@
             <field name="id_mws">APJ6JRA9NG5V4</field>
             <field search="[('code','=','IT')]" model='res.country' name='country_id'/>
             <field search="[('code','=','it_IT')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
             <field name="sequence">50</field>
         </record>
 
@@ -209,6 +175,7 @@
             <field name="id_mws">A2EUQ1WTGCTBG2</field>
             <field search="[('code','=','CA')]" model='res.country' name='country_id'/>
             <field search="[('code','=','fr_CA')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
             <field name="sequence">60</field>
         </record>
 
@@ -217,6 +184,7 @@
             <field name="id_mws">ATVPDKIKX0DER</field>
             <field search="[('code','=','US')]" model='res.country' name='country_id'/>
             <field search="[('code','=','en_US')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
             <field name="sequence">70</field>
         </record>
 
@@ -225,73 +193,88 @@
             <field name="id_mws">A1AM78C64UM0Y8</field>
             <field search="[('code','=','MX')]" model='res.country' name='country_id'/>
             <field search="[('code','=','es_MX')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
             <field name="sequence">80</field>
         </record>
 		
 		<!-- Amazon item condition -->
         <record id="amazon_item_condition_new" model='amazon.config.order.item.condition'>
+            <field name="identifier">11</field>
             <field name="name">New</field>
             <field name="sequence">10</field>
         </record>
-		
-		<record id="amazon_item_condition_mint" model='amazon.config.order.item.condition'>
-            <field name="name">Mint</field>
+
+        <record id="amazon_item_condition_used_like_new" model='amazon.config.order.item.condition'>
+            <field name="identifier">2</field>
+            <field name="name">Used, like new</field>
             <field name="sequence">20</field>
         </record>
-		
-		<record id="amazon_item_condition_verygood" model='amazon.config.order.item.condition'>
-            <field name="name">Very Good</field>
+
+		<record id="amazon_item_condition_used_verygood" model='amazon.config.order.item.condition'>
+            <field name="identifier">3</field>
+            <field name="name">Used, very good</field>
             <field name="sequence">30</field>
         </record>
 		
-		<record id="amazon_item_condition_good" model='amazon.config.order.item.condition'>
-            <field name="name">Acceptable</field>
+		<record id="amazon_item_condition_used_good" model='amazon.config.order.item.condition'>
+            <field name="identifier">3</field>
+            <field name="name">Used, good</field>
             <field name="sequence">40</field>
         </record>
 		
-		<record id="amazon_item_condition_poor" model='amazon.config.order.item.condition'>
-            <field name="name">Poor</field>
+		<record id="amazon_item_condition_used_aceptable" model='amazon.config.order.item.condition'>
+            <field name="identifier">4</field>
+            <field name="name">Used, aceptable</field>
             <field name="sequence">50</field>
         </record>
-		
-		<record id="amazon_item_condition_club" model='amazon.config.order.item.condition'>
-            <field name="name">Club</field>
+
+        <record id="amazon_item_condition_collectible_like_new" model='amazon.config.order.item.condition'>
+            <field name="identifier">5</field>
+            <field name="name">Collectible, like new</field>
             <field name="sequence">60</field>
         </record>
-        
-        <record id="amazon_item_condition_oem" model='amazon.config.order.item.condition'>
-            <field name="name">OEM</field>
+
+        <record id="amazon_item_condition_collectible_very_good" model='amazon.config.order.item.condition'>
+            <field name="identifier">6</field>
+            <field name="name">Collectible, very good</field>
             <field name="sequence">70</field>
         </record>
-        
-        <record id="amazon_item_condition_warranty" model='amazon.config.order.item.condition'>
-            <field name="name">Warranty</field>
+
+        <record id="amazon_item_condition_collectible_good" model='amazon.config.order.item.condition'>
+            <field name="identifier">7</field>
+            <field name="name">Collectible, good</field>
             <field name="sequence">80</field>
         </record>
-        
-        <record id="amazon_item_condition_refurbishedW" model='amazon.config.order.item.condition'>
-            <field name="name">Refurbished Warranty</field>
+
+        <record id="amazon_item_condition_collectible_acceptable" model='amazon.config.order.item.condition'>
+            <field name="identifier">8</field>
+            <field name="name">Collectible, acceptable</field>
             <field name="sequence">90</field>
         </record>
-        
-        <record id="amazon_item_condition_refurbished" model='amazon.config.order.item.condition'>
-            <field name="name">Refurbished</field>
-            <field name="sequence">100</field>
+
+        <!-- Amazon product type -->
+        <record id="amazon_product_type_asin" model='amazon.config.product.type'>
+            <field name="identifier">1</field>
+            <field name="name">ASIN</field>
+            <field name="sequence">10</field>
         </record>
-        
-        <record id="amazon_item_condition_openBox" model='amazon.config.order.item.condition'>
-            <field name="name">Open Box</field>
-            <field name="sequence">110</field>
+
+        <record id="amazon_product_type_isbn" model='amazon.config.product.type'>
+            <field name="identifier">2</field>
+            <field name="name">ISBN</field>
+            <field name="sequence">20</field>
         </record>
-        
-        <record id="amazon_item_condition_any" model='amazon.config.order.item.condition'>
-            <field name="name">Any</field>
-            <field name="sequence">120</field>
+
+        <record id="amazon_product_type_upc" model='amazon.config.product.type'>
+            <field name="identifier">3</field>
+            <field name="name">UPC</field>
+            <field name="sequence">30</field>
         </record>
-        
-        <record id="amazon_item_condition_other" model='amazon.config.order.item.condition'>
-            <field name="name">Other</field>
-            <field name="sequence">130</field>
+
+        <record id="amazon_product_type_ean" model='amazon.config.product.type'>
+            <field name="identifier">4</field>
+            <field name="name">EAN</field>
+            <field name="sequence">40</field>
         </record>
 
         <!-- Amazon product UoM -->

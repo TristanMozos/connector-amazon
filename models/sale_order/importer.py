@@ -2,17 +2,17 @@
 # Copyright 2018 Halltic eSolutions S.L.
 # © 2018 Halltic eSolutions S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 import logging
 import re
 
-from odoo.fields import Datetime
-from odoo import _
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping
 from odoo.addons.queue_job.exception import FailedJobError, RetryableJobError
 
 from ...components.backend_adapter import AMAZON_ORDER_ID_PATTERN
+from ...models.config.common import AMAZON_DEFAULT_PERCENTAGE_FEE
 
 _logger = logging.getLogger(__name__)
 
@@ -24,12 +24,51 @@ class SaleOrderBatchImporter(Component):
 
     def run(self, filters=None):
         """ Run the synchronization """
+        # Get new sales and sales updated
         sales = self.backend_adapter.search(filters)
         _logger.info('get report of saleorders returned %s', sales.keys())
         for sale in sales.iteritems():
             sale_binding_model = self.env['amazon.sale.order']
             delayable = sale_binding_model.with_delay(priority=5, eta=datetime.now())
             delayable.import_record(self.backend_record, sale)
+
+        if filters.get('update_sales_flag'):
+            # Get sales with more than 4 days and states updatables
+            status_updatable = self.env['amazon.config.order.status.updatable'].search([])
+            now_time = datetime.strptime(datetime.today().strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
+
+            sales = self.env['amazon.sale.order'].search(["|",
+                                                          ('order_status_id', 'in', status_updatable.ids),
+                                                          ('order_status_id', '=', False)])
+
+            sales = sales.filtered(lambda sale:(now_time - datetime.strptime(sale.date_purchase, '%Y-%m-%d %H:%M:%S')).days > 4)
+
+            jobs = self.env['queue.job'].search([('state', 'in', ('pending', 'enqueued', 'started')),
+                                                 ('model_name', '=', 'amazon.sale.order'),
+                                                 ('func_string', '=like', '%import_record%'),
+                                                 ('func_string', '=like', '%amazon.backend(' + str(self.backend_record.id) + '%')]).mapped('func_string')
+
+            for job in jobs:
+                sales = sales.filtered(lambda sale:(False if sale.id_amazon_order in job else True))
+
+            sale_binding_model = self.env['amazon.sale.order']
+
+            i = 0
+            # We read fifty sales each call because is the limit of MWS API
+            while i * 50 < len(sales):
+                aux_sales = sales[i:i + 50]
+                order_ids = aux_sales.mapped('id_amazon_order')
+                try:
+                    # Read the orders by ids
+                    aux_sales = self.backend_adapter.read(order_ids)
+                    for sale in aux_sales:
+                        if sale['order_id'] not in jobs:
+                            delayable = sale_binding_model.with_delay(priority=5, eta=datetime.now() + timedelta(seconds=10))
+                            delayable.import_record(self.backend_record, (sale['order_id'], sale))
+                except Exception as e:
+                    # If there are errors we break the loop and we are going to finish to get sales to update
+                    break
+                i += 1
 
 
 class SaleOrderImportMapper(Component):
@@ -77,10 +116,11 @@ class SaleOrderImportMapper(Component):
     def finalize(self, map_record, values):
         values.setdefault('order_line', [])
         values = self._add_shipping_line(map_record, values)
-        values.update({
-            'partner_invoice_id':values['partner_id'],
-            'partner_shipping_id':values['partner_id'],
-        })
+        if values.get('partner_id'):
+            values.update({
+                'partner_invoice_id':values['partner_id'],
+                'partner_shipping_id':values['partner_id'],
+            })
         onchange = self.component(usage='ecommerce.onchange.manager.sale.order')
         return onchange.play(values, values['amazon_order_line_ids'])
 
@@ -94,12 +134,13 @@ class SaleOrderImportMapper(Component):
 
     @mapping
     def customer_id(self, record):
-        binder = self.binder_for('amazon.res.partner')
-        partner = binder.to_internal(record['partner']['email'], unwrap=True)
-        assert partner, (
-                "customer_id %s should have been imported in "
-                "SaleOrderImporter._import_dependency" % record['partner']['email'])
-        return {'partner_id':partner.id}
+        if self.env['amazon.config.order.status'].browse(record.get('order_status_id')).name not in ('Canceled', 'Pending'):
+            binder = self.binder_for('amazon.res.partner')
+            partner = binder.to_internal(record['partner']['email'], unwrap=True)
+            assert partner, (
+                    "customer_id %s should have been imported in "
+                    "SaleOrderImporter._import_dependency" % record['partner']['email'])
+            return {'partner_id':partner.id}
 
     @mapping
     def partner_id(self, record):
@@ -184,7 +225,11 @@ class SaleOrderImportMapper(Component):
 
     @mapping
     def state(self, record):
-        return {'state':'sale'}
+        if record.get('order_status_id') and self.env['amazon.config.order.status'].browse(record['order_status_id']).name == 'Canceled':
+            return {'state':'cancel'}
+        if record.get('partner_id'):
+            return {'state':'sale'}
+        return {'state':'draft'}
 
     @mapping
     def total_tax_included(self, record):
@@ -213,21 +258,33 @@ class SaleOrderImporter(Component):
 
         If it returns None, the import will continue normally.
 
+        We are going to import the order if the status order is different to 'Canceled' or 'Pending' and the order has not been imported before
+        If the order has been imported and the before status order is not 'Canceled' or 'Shipped' we are going to import the order to update this
+
         :returns: None | str | unicode
         """
-        return None
+        if not self._get_binding() and \
+                self.env['amazon.config.order.status'].browse(self.amazon_record.get('order_status_id')).name in ('Canceled', 'Pending'):
+            return 'Not importable order'
+        if self._get_binding() and self._get_binding().order_status_id.name not in ('Canceled', 'Shipped'):
+            return None
+        return self._get_binding()
 
     def _import_dependencies(self):
-        importer = self.component(usage='record.importer', model_name='amazon.res.partner')
-        importer.amazon_record = self.amazon_record['partner']
-        self._import_dependency(external_id=self.amazon_record['partner']['email'], binding_model='amazon.res.partner', importer=importer)
-        self.amazon_record['partner_id'] = self.env['amazon.res.partner'].search([('email', '=', self.amazon_record['partner']['email'])]).id
+        # We import the partner, if this exists
+        if self.env['amazon.config.order.status'].browse(self.amazon_record.get('order_status_id')).name not in ('Canceled', 'Pending'):
+            importer = self.component(usage='record.importer', model_name='amazon.res.partner')
+            if self.amazon_record.get('partner'):
+                importer.amazon_record = self.amazon_record['partner']
+                if self.amazon_record.get('partner') and self.amazon_record['partner'].get('email'):
+                    self._import_dependency(external_id=self.amazon_record['partner']['email'], binding_model='amazon.res.partner', importer=importer)
+                    self.amazon_record['partner_id'] = self.env['amazon.res.partner'].search([('email', '=', self.amazon_record['partner']['email'])]).id
 
-        # Check if the product is imported
-        for line in self.amazon_record['lines']:
-            product = self.env['amazon.product.product'].search([('sku', '=', line.get('sku'))])
-            if not product:
-                self._import_dependency([line.get('sku'), ], 'amazon.product.product')
+            # Check if the product is imported
+            for line in self.amazon_record['lines']:
+                product = self.env['amazon.product.product'].search([('sku', '=', line.get('sku'))])
+                if not product:
+                    self._import_dependency(line.get('sku'), 'amazon.product.product')
 
     def _create(self, data):
         binding = super(SaleOrderImporter, self)._create(data)
@@ -249,15 +306,19 @@ class SaleOrderImporter(Component):
     def _get_amazon_data(self):
         if self.amazon_record and self._validate_data(self.amazon_record):
             return self.amazon_record
-        return self.backend_adapter.read(external_id=self.external_id)
+        amazon_record = self.backend_adapter.read(external_id=self.external_id)
+        amazon_record['marketplace'] = self.env['amazon.config.marketplace'].search([('id_mws', '=', amazon_record.get('marketplace_id'))])
+        amazon_record['marketplace_id'] = amazon_record['marketplace'].id
+        return amazon_record
 
     def _create_data(self, map_record, **kwargs):
+        partner_id = self.amazon_record['partner_id'] if self.amazon_record.get('state') == 'sale' or self.amazon_record['partner_id'] else None
         return super(SaleOrderImporter, self)._create_data(
             map_record,
             tax_include=True,
-            partner_id=self.amazon_record['partner_id'],
-            partner_invoice_id=self.amazon_record['partner_id'],
-            partner_shipping_id=self.amazon_record['partner_id'],
+            partner_id=partner_id,
+            partner_invoice_id=partner_id,
+            partner_shipping_id=partner_id,
             **kwargs)
 
     def _update_data(self, map_record, **kwargs):
@@ -272,37 +333,32 @@ class SaleOrderImporter(Component):
         order_status_id = binding.order_status_id
         if order_status_id.id != data.get('order_status_id'):
             vals['order_status_id'] = data.get('order_status_id')
+            if self.env['amazon.config.order.status'].browse(data.get('order_status_id')).name in ('Canceled'):
+                vals['state'] = 'cancel'
 
         vals['number_items_shipped'] = data.get('number_items_shipped')
         vals['number_items_unshipped'] = data.get('number_items_unshipped')
 
         binding.write(vals)
-        # If the order has been shipped we call to stock.picking.do_transfer()
+        # If the order has been shipped we call to stock.picking.action_done()
         if order_status_id.id != binding.order_status_id.id and \
                 binding.order_status_id.name == 'Shipped':
             for pick in binding.odoo_id.picking_ids:
-                pick.do_transfer()
+                pick.action_done()
 
     def _before_import(self):
-        if self.amazon_record and self.amazon_record.get('lines'):
-            importer = self.component(usage='amazon.product.category', model_name='amazon.product.product')
-            record = {'marketplace_id':self.amazon_record['marketplace'].id,
-                      'product_product_market_ids':[
-                          {'marketplace_id':self.amazon_record['marketplace'].id,
-                           'sku':line['sku']}
-                          for line in self.amazon_record['lines']]}
-            importer.run(record)
-        elif self.amazon_record and not self.amazon_record.get('lines'):
-            try:
-                self.backend_adapter.get_lines(filters=[self.amazon_record])
-                if not self.amazon_record.get('lines'):
-                    status = self.backend_record.env['amazon.config.order.status'].browse(self.amazon_record.get('order_status_id')).name
-                    if status and status != 'Cancelled':
-                        raise FailedJobError("Error recovering lines of the record (%s)", self.amazon_record['order_id'])
+        if self.env['amazon.config.order.status'].browse(self.amazon_record.get('order_status_id')).name not in ('Canceled', 'Pending'):
+            if self.amazon_record and not self.amazon_record.get('lines'):
+                try:
+                    self.backend_adapter.get_lines(filters=[self.amazon_record])
+                    if not self.amazon_record.get('lines'):
+                        status = self.backend_record.env['amazon.config.order.status'].browse(self.amazon_record.get('order_status_id')).name
+                        if status and status not in ('Canceled', 'Pending'):
+                            raise FailedJobError("Error recovering lines of the record (%s)", self.amazon_record['order_id'])
+                        raise RetryableJobError('The record haven\'t got the lines of items', 60, True)
+                except Exception as e:
                     raise RetryableJobError('The record haven\'t got the lines of items', 60, True)
-            except:
-                raise RetryableJobError('The record haven\'t got the lines of items', 60, True)
-        return
+            return
 
     def _after_import(self, binding):
         """ Hook called at the end of the import
@@ -320,8 +376,8 @@ class SaleOrderImporter(Component):
                                                                                                              'taxes_id',
                                                                                                              company_id=backend.company_id.id))
                     if not line.tax_id.price_include and line.tax_id:
-                        taxes = line.tax_id._compute_amount_taxes_include(line.price_unit,
-                                                                          line.product_uom_qty)
+                        taxes = line.tax_id._compute_amount_taxes(line.price_unit,
+                                                                  line.product_uom_qty)
                         line.update({
                             'price_tax':taxes,
                             'price_total':line.price_unit,
@@ -349,10 +405,15 @@ class SaleOrderImporter(Component):
                 raise RetryableJobError('', 30, True)
             raise e
 
-        # If the order has been shipped we call to stock.picking.do_transfer()
+        # If the order has been shipped we call to stock.picking.action_done()
         if binding.order_status_id.name == 'Shipped':
             for pick in binding.odoo_id.picking_ids:
-                pick.do_transfer()
+                pick.action_done()
+        if binding.order_status_id.name == 'Canceled':
+            for pick in binding.odoo_id.picking_ids:
+                if pick.state != 'done':
+                    pick.action_cancel()
+                # TODO else _create_returns call
 
     def run(self, external_id, force=False):
         """ Run the synchronization
@@ -406,18 +467,13 @@ class SaleOrderLineImportMapper(Component):
             return {'price_unit':record['price_unit']}
 
     @mapping
-    def state(self, record):
-        return {'state':'sale'}
-
-    @mapping
     def fee(self, record):
         if record.get('sku') and record.get('marketplace_id'):
-            product = self.env['amazon.product.product.detail'].search([('sku', '=', record['sku']), ('marketplace_id', '=', record['marketplace_id'])])
-            if product and product.category_id:
-                percentage = product.category_id.percentage
-            else:
-                percentage = self.env['amazon.config.product.category'].search([('name', '=', 'default')]).percentage
+            marketplace_id = self.env['amazon.config.marketplace'].search([('id_mws', '=', record['marketplace_id'])])
+            product = self.env['amazon.product.product.detail'].search([('sku', '=', record['sku']), ('marketplace_id', '=', marketplace_id.id)])
+            if product:
+                fee = product.total_fee or \
+                      (float(record.get('item_price') or 0.) + float(record.get('ship_price') or 0.) *
+                       (product.percentage_fee or AMAZON_DEFAULT_PERCENTAGE_FEE)) / 100
 
-            fee = (float(record.get('item_price') or 0.) + float(record.get('ship_price') or 0.) * percentage) / 100
-
-            return {'fee':fee}
+                return {'fee':fee}

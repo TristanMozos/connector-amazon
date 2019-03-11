@@ -36,39 +36,6 @@
         <field name="view_id" ref="view_amazon_marketplace_tree"/>
     </record>
 
-    <!-- Product category -->
-    <record id="view_amazon_category_product_tree" model="ir.ui.view">
-        <field name="name">Amazon category product</field>
-        <field name="model">amazon.config.product.category</field>
-        <field name="arch" type="xml">
-            <tree string="Amazon category product">
-                <field name="name"/>
-                <field name="percentage"/>
-                <field name="market_id"/>
-            </tree>
-        </field>
-    </record>
-
-    <record id="view_amazon_category_product_form" model="ir.ui.view">
-        <field name="name">amazon.config.product.category.form</field>
-        <field name="model">amazon.config.product.category</field>
-        <field name="arch" type="xml">
-            <form>
-                <group><field name="name"/></group>
-                <group><field name="percentage"/></group>
-                <group><field name="market_id"/></group>
-            </form>
-        </field>
-    </record>
-
-    <record id="action_amazon_category_product" model="ir.actions.act_window">
-        <field name="name">Amazon category product</field>
-        <field name="res_model">amazon.config.product.category</field>
-        <field name="view_type">form</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_amazon_category_product_tree"/>
-    </record>
-
     <!-- MWS control quota -->
     <record id="view_amazon_mws_control_quota_tree" model="ir.ui.view">
         <field name="name">Amazon MWS control request</field>
@@ -106,6 +73,44 @@
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_mws_control_quota_tree"/>
+    </record>
+
+
+    <!--SQS account-->
+    <record id="view_amazon_sqs_account_tree" model="ir.ui.view">
+        <field name="name">Amazon SQS account</field>
+        <field name="model">amazon.config.sqs.account</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon SQS account">
+                <field name="name"/>
+                <field name="access_key"/>
+                <field name="region"/>
+                <field name="queue_url"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_sqs_account_form" model="ir.ui.view">
+        <field name="name">amazon.config.sqs.account.form</field>
+        <field name="model">amazon.config.sqs.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="name"/></group>
+                <group><field name="access_key"/></group>
+                <group><field name="secret_key"/></group>
+                <group><field name="region"/></group>
+                <group><field name="queue_url"/></group>
+                <group><field name="number_message_to_process"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_sqs_account" model="ir.actions.act_window">
+        <field name="name">SQS Account</field>
+        <field name="res_model">amazon.config.sqs.account</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_sqs_account_tree"/>
     </record>
 
 </odoo>

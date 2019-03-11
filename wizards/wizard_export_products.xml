@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_export_products_form" model="ir.ui.view">
+        <field name="name" >Wizard Import Orders</field>
+        <field name="model" >amazon.list.products.export.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="backend_id"/>
+                    </group>
+                    <group>
+                        <field name="marketplace_ids"/>
+                    </group>
+                    <group>
+                        <field name="product_export_ids"/>
+                    </group>
+                    <group>
+                        <field name="product_cant_export_ids"/>
+                    </group>
+                    <footer>
+                        <button special="cancel" string="Cancelar"/>
+                        <button name="export_products_list"
+                                type="object"
+                                string="Export"
+                                class="oe_highlight"/>
+                    </footer>
+               </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_wizard_amazon_export_product" model="ir.actions.act_window">
+        <field name="name">Wizard to export products</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.template</field>
+        <field name="src_model">amazon.order.import.wizard</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="product.product_template_search_view"/>
+        <field name="target">current</field>
+        <field name="multi">True</field>
+        <field name="key2">client_action_multi</field>
+    </record>
+
+    <record id="view_products_can_be_exported_to_amazon_tree" model="ir.ui.view">
+        <field name="name">Wizard products to export</field>
+        <field name="model">amazon.product.to.export.wizard</field>
+        <field name="arch" type="xml">
+            <tree string="Products" create="false">
+                <field name="default_code" string="Default code" />
+                <field name="name" string="Name" />
+                <field name="barcode" string="Barcode" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_init_wizard_search_products_to_amazon_export" model="ir.actions.server">
+        <field name="name">Export to Amazon</field>
+        <field name="model_id" ref="connector-amazon.model_product_template"/>
+        <field name="state">code</field>
+        <field name="condition">True</field>
+        <field name="code">action = env.get('amazon.list.products.export.wizard').get_wizard_action()</field>
+    </record>
+
+    <record id="dditem_exportar_productos_amazon" model="ir.values">
+        <field name="name">name</field>
+        <field name="model">product.template</field>
+        <field name="key" >action</field>
+        <field name="key2">client_action_multi</field>
+        <field name="value" eval="'ir.actions.server,%d'%action_init_wizard_search_products_to_amazon_export"/>
+    </record>
+
+</odoo>

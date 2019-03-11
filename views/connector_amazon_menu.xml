@@ -20,15 +20,15 @@
         parent="menu_amazon_configuration"
         action="action_amazon_marketplace"/>
 
-     <menuitem id="menu_amazon_category_product"
-        name="Category product"
-        parent="menu_amazon_configuration"
-        action="action_amazon_category_product"/>
-
     <menuitem id="menu_amazon_mws_control_quota"
-        name="MWS config"
+        name="MWS control quota config"
         parent="menu_amazon_configuration"
         action="action_amazon_mws_control_quota"/>
+
+    <menuitem id="menu_amazon_sqs_account"
+        name="SQS Account"
+        parent="menu_amazon_configuration"
+        action="action_amazon_sqs_account"/>
 
     <!-- Backends submenu -->
     <menuitem id="menu_amazon_backend"
@@ -52,6 +52,12 @@
         name="Products marketplace data"
         action="action_amazon_product_marketplace"/>
 
+    <menuitem id="menu_amazon_export_products"
+        parent="menu_amazon_products"
+        name="Export products to Amazon"
+        action="action_view_wizard_amazon_export_product"/>
+
+
     <!-- Orders submenu -->
     <menuitem id="menu_amazon_orders"
         name="Orders"
@@ -68,5 +74,22 @@
         name="Returns"
         parent="menu_amazon_root"
         action="action_amazon_return"/>
+
+    <!-- Feeds submenu -->
+    <menuitem id="menu_amazon_feeds"
+        parent="menu_amazon_root"
+        name="Feeds"
+        sequence="40"
+        groups="connector.group_connector_manager"/>
+
+    <menuitem id="menu_amazon_feeds_launched"
+        parent="menu_amazon_feeds"
+        name="Feeds launched"
+        action="action_amazon_feed"/>
+
+    <menuitem id="menu_amazon_feeds_to_throw"
+        parent="menu_amazon_feeds"
+        name="Feeds to throw"
+        action="action_amazon_throw_feed"/>
 
 </odoo>
