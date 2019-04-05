@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2018 Halltic eSolutions S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-
+import inspect
 import logging
 import random
 
@@ -80,8 +80,8 @@ class AmazonProductProduct(models.Model):
     def import_record_details(self, backend):
         _super = super(AmazonProductProduct, self)
         self._get_products_initial_fees(backend)
-        self._get_products_initial_prices(backend)
-        self._process_notification_messages(backend)
+        # self._get_products_initial_prices(backend)
+        # self._process_notification_messages(backend)
 
     @job(default_channel='root.amazon')
     @api.model
@@ -98,6 +98,7 @@ class AmazonProductProduct(models.Model):
             if not result:
                 raise RetryableJobError(msg='The product of the backend %s hasn\'t could not be imported. \n %s' % (backend.name, external_id),
                                         seconds=random.randint(90, 600))
+
         except Exception as e:
             if e.message.find('current transaction is aborted') > -1 or e.message.find('could not serialize access due to concurrent update') > -1:
                 raise RetryableJobError('A concurrent job is already exporting the same record '
@@ -119,6 +120,7 @@ class AmazonProductProduct(models.Model):
             self._export_stock(backend)
 
     def _export_stock(self, backend):
+        _logger.info('Connector-amazon [%s] log: Export stock init with %s backend' % (inspect.stack()[0][3], backend.name))
         products = self.env['amazon.product.product'].search([('backend_id', '=', backend.id)])
 
         i = [detail for product in products for detail in product.product_product_market_ids if
@@ -131,76 +133,44 @@ class AmazonProductProduct(models.Model):
             handling_time = detail.product_id.odoo_id._compute_amazon_handling_time()
 
             if detail.stock != virtual_available:
-                detail.stock = virtual_available
-
-                upst = self.env['amazon.feed.tothrow'].search([('backend_id', '=', backend.id),
-                                                               ('type', '=', 'Update_stock'),
-                                                               ('launched', '=', False),
-                                                               ('model', '=', detail._name),
-                                                               ('identificator', '=', detail.id),
-                                                               ('marketplace_id', '=', detail.marketplace_id.id)],
-                                                              order='create_date asc')
 
                 if not handling_time or not virtual_available or virtual_available < 1 or detail.product_id.handling_time == handling_time:
-                    data = {'sku':detail.sku,
+                    data = {'sku':detail.product_id.sku,
                             'Quantity':'0' if virtual_available < 0 or not handling_time else str(int(virtual_available)),
                             'id_mws':detail.marketplace_id.id_mws}
-                    if upst:
-                        i = 0
-                        tam = len(upst)
-                        for element in upst:
-                            element.data = data if not (tam > 1 and i <= tam - 1) else None
-                            element.launched = (tam > 1 and i <= tam - 1)
-                            i = i + 1
-                    else:
-                        vals = {'backend_id':backend.id,
-                                'type':'Update_stock',
-                                'model':detail._name,
-                                'identificator':detail.id,
-                                'data':data,
-                                }
-                        self.env['amazon.feed.tothrow'].create(vals)
+
+                    vals = {'backend_id':backend.id,
+                            'type':'Update_stock',
+                            'model':detail._name,
+                            'identificator':detail.id,
+                            'data':data,
+                            }
+                    self.env['amazon.feed.tothrow'].create(vals)
 
 
                 else:
-                    # If there is a update stock pending, we cancel this to send later the update stock and price, with handling time
-                    if upst:
-                        upst.launched = True
 
-                    upstp = self.env['amazon.feed.tothrow'].search([('backend_id', '=', backend.id),
-                                                                    ('type', '=', 'Update_stock_price'),
-                                                                    ('launched', '=', False),
-                                                                    ('model', '=', detail._name),
-                                                                    ('identificator', '=', detail.id),
-                                                                    ('marketplace_id', '=', detail.marketplace_id.id)],
-                                                                   order='create_date asc')
-
-                    detail._get_amazon_prices()
                     data = {'sku':detail.sku,
                             'Price':("%.2f" % detail.price).replace('.', detail.marketplace_id.decimal_currency_separator) if detail.price else '',
                             'Quantity':'0' if virtual_available < 0 else str(int(virtual_available)),
-                            'handling-time':str(handling_time) if handling_time else '1',
+                            'handling-time':str(handling_time) if handling_time and handling_time > 0 else '1',
                             'id_mws':detail.marketplace_id.id_mws}
-                    if upstp:
-                        i = 0
-                        tam = len(upstp)
-                        for element in upstp:
-                            element.data = data if not (tam > 1 and i <= tam - 1) else None
-                            element.launched = (tam > 1 and i <= tam - 1)
-                            i = i + 1
-                    else:
-                        vals = {'backend_id':backend.id,
-                                'type':'Update_stock_price',
-                                'model':detail._name,
-                                'identificator':detail.id,
-                                'marketplace_id':detail.marketplace_id.id,
-                                'data':data,
-                                }
-                        self.env['amazon.feed.tothrow'].create(vals)
 
-            detail.product_id.handling_time = handling_time
+                    vals = {'backend_id':backend.id,
+                            'type':'Update_stock_price',
+                            'model':detail._name,
+                            'identificator':detail.id,
+                            'marketplace_id':detail.marketplace_id.id,
+                            'data':data,
+                            }
+                    self.env['amazon.feed.tothrow'].create(vals)
+
+                detail.product_id.handling_time = handling_time
+
+        _logger.info('Connector-amazon [%s] log: Finish Export stock with %s backend' % (inspect.stack()[0][3], backend.name))
 
     def _export_stock_prices(self, backend):
+        _logger.info('Connector-amazon [%s] log: Export stock and prices init with %s backend' % (inspect.stack()[0][3], backend.name))
         products = self.env['amazon.product.product'].search([('backend_id', '=', backend.id)])
         i = [detail for product in products for detail in product.product_product_market_ids if
              product.product_product_market_ids]
@@ -216,38 +186,28 @@ class AmazonProductProduct(models.Model):
                 if handling_time is None:
                     virtual_available = 0
 
-                upstp = self.env['amazon.feed.tothrow'].search([('backend_id', '=', backend.id),
-                                                                ('type', '=', 'Update_stock_price'),
-                                                                ('launched', '=', False), ('model', '=', detail._name),
-                                                                ('identificator', '=', detail.id),
-                                                                ('marketplace_id', '=', detail.marketplace_id.id)],
-                                                               order='create_date asc')
                 data = {'sku':detail.sku,
                         'Price':("%.2f" % price).replace('.', detail.marketplace_id.decimal_currency_separator) if price else '',
                         'Quantity':'0' if virtual_available < 0 else str(int(virtual_available)),
-                        'handling-time':str(handling_time) if handling_time else '1',
+                        'handling-time':str(handling_time) if handling_time and handling_time > 0 else '1',
                         'id_mws':detail.marketplace_id.id_mws}
-                if upstp:
-                    i = 0
-                    tam = len(upstp)
-                    for element in upstp:
-                        element.data = data if not (tam > 1 and i <= tam - 1) else None
-                        element.launched = (tam > 1 and i <= tam - 1)
-                        i = i + 1
-                else:
-                    vals = {'backend_id':backend.id,
-                            'type':'Update_stock_price',
-                            'model':detail._name,
-                            'identificator':detail.id,
-                            'marketplace_id':detail.marketplace_id.id,
-                            'data':data,
-                            }
-                    self.env['amazon.feed.tothrow'].create(vals)
+
+                vals = {'backend_id':backend.id,
+                        'type':'Update_stock_price',
+                        'model':detail._name,
+                        'identificator':detail.id,
+                        'marketplace_id':detail.marketplace_id.id,
+                        'data':data,
+                        }
+                self.env['amazon.feed.tothrow'].create(vals)
 
             except Exception as e:
                 _logger.error(e.message)
 
+        _logger.info('Connector-amazon [%s] log: Finish export stock and prices init with %s backend' % (inspect.stack()[0][3], backend.name))
+
     def _get_products_initial_fees(self, backend):
+        _logger.info('Connector-amazon [%s] log: Get initial fees on backend %s' % (inspect.stack()[0][3], backend.name))
         detail_products = self.env['amazon.product.product.detail'].search([('product_id.backend_id', '=', backend.id),
                                                                             ('percentage_fee', '=', False),
                                                                             ('stock', '>', 0)])
@@ -265,22 +225,25 @@ class AmazonProductProduct(models.Model):
                         detail.percentage_fee = round((prices['fee']['Amount'] * 100) / (detail.price + detail.price_ship or 0))
                         detail.total_fee = prices['fee']['Final']
 
+        _logger.info('Connector-amazon [%s] log: Finish get initial fees on backend %s' % (inspect.stack()[0][3], backend.name))
         return
 
     def _get_products_initial_prices(self, backend):
         """
         :return:
         """
+        _logger.info('Connector-amazon [%s] log: Get initial prices on backend %s' % (inspect.stack()[0][3], backend.name))
         detail_products = self.env['amazon.product.product.detail'].search([('product_id.backend_id', '=', backend.id),
                                                                             ('first_price_searched', '=', False),
                                                                             ('stock', '>', 0)])
         with backend.work_on(self._name) as work:
             importer = work.component(usage='amazon.product.lowestprice')
-            try:
-                for detail in detail_products:
+            for detail in detail_products:
+                try:
                     importer.run(detail)
-            except Exception as e:
-                _logger.error(e.message)
+                except Exception as e:
+                    _logger.error(e.message)
+        _logger.info('Connector-amazon [%s] log: Finish get initial prices on backend %s' % (inspect.stack()[0][3], backend.name))
 
     def _process_notification_messages(self, backend):
         with backend.work_on(self._name) as work:
@@ -296,16 +259,12 @@ class AmazonProductProduct(models.Model):
 
 class AmazonProductProductDetail(models.Model):
     _name = 'amazon.product.product.detail'
-    _inherits = {'product.pricelist':'odoo_id'}
     _description = 'Amazon Product Variant on Every Marketplace'
-
-    odoo_id = fields.Many2one(comodel_name='product.pricelist',
-                              string='PriceList',
-                              required=True,
-                              ondelete='restrict')
 
     product_id = fields.Many2one('amazon.product.product', 'product_data_market_ids', ondelete='cascade', required=True,
                                  readonly=True)
+
+    sku = fields.Char('SKU', related='product_id.sku')
     title = fields.Char('Product_name', required=False)
     price = fields.Float('Price', required=False)  # This price have the tax included
     min_allowed_price = fields.Float('Min allowed price', required=False)  # This is the min price allowed
@@ -317,10 +276,11 @@ class AmazonProductProductDetail(models.Model):
     status = fields.Selection(selection=[('Active', 'Active'),
                                          ('Inactive', 'Inactive'),
                                          ('Unpublished', 'Unpublished'),
-                                         ('Submmited', 'Submmited')],
+                                         ('Submmited', 'Submmited'),
+                                         ('Incomplete', 'Incomplete'), ],
                               string='Status', default='Active')
     stock = fields.Integer('Stock')
-    date_created = fields.Datetime('date_created', required=False)
+    date_created = fields.Datetime('Product created at', required=False)
     category_id = fields.Many2one('amazon.config.product.category', 'Category',
                                   default=lambda self:self.env['amazon.config.product.category'].search(
                                       [('name', '=', 'default')]))
@@ -484,6 +444,51 @@ class SupplierInfo(models.Model):
         self._event('on_record_create').notify(record, fields=vals.keys())
         return record
 
+    def export_products_from_supplierinfo(self):
+        if self.name.automatic_export_products and (self.product_id.barcode or self.product_tmpl_id.barcode):
+            for marketplace in self.name.backend_id.marketplace_ids:
+                supr = self.env['amazon.feed.tothrow'].search([('backend_id', '=', self.name.backend_id.id),
+                                                               ('type', '=', 'Add_products_csv'),
+                                                               ('launched', '=', False),
+                                                               ('model', '=', self.product_id._name),
+                                                               ('identificator', '=', self.product_id.id),
+                                                               ('marketplace_id', '=', marketplace.id)])
+
+                data = {'sku':self.product_id.default_code or self.product_id.product_variant_id.default_code}
+                data['product-id'] = self.product_id.barcode or self.product_tmpl_id.barcode
+                data['product-id-type'] = 'EAN'
+                price = self.product_id.product_variant_id._calc_amazon_price(backend=self.name.backend_id,
+                                                                              margin=self.name.backend_id.max_margin or AMAZON_DEFAULT_PERCENTAGE_MARGIN,
+                                                                              marketplace=marketplace,
+                                                                              percentage_fee=AMAZON_DEFAULT_PERCENTAGE_FEE)
+                data['price'] = ("%.2f" % price).replace('.', marketplace.decimal_currency_separator) if price else ''
+                data['minimum-seller-allowed-price'] = ''
+                data['maximum-seller-allowed-price'] = ''
+                data['item-condition'] = '11'  # We assume the products are new
+                data['quantity'] = '0'  # The products stocks allways is 0 when we export these
+                data['add-delete'] = 'a'
+                data['will-ship-internationally'] = ''
+                data['expedited-shipping'] = ''
+                data['merchant-shipping-group-name'] = ''
+                handling_time = self.product_id.product_variant_id._compute_amazon_handling_time() or ''
+                data['handling-time'] = str(handling_time) if price else ''
+                data['item_weight'] = ''
+                data['item_weight_unit_of_measure'] = ''
+                data['item_volume'] = ''
+                data['item_volume_unit_of_measure'] = ''
+                data['id_mws'] = marketplace.id_mws
+                vals = {'backend_id':self.name.backend_id.id,
+                        'type':'Add_products_csv',
+                        'model':self.product_id._name,
+                        'identificator':self.product_id.id,
+                        'marketplace_id':marketplace.id,
+                        'data':data,
+                        }
+                if supr:
+                    supr.write(vals)
+                else:
+                    self.env['amazon.feed.tothrow'].create(vals)
+
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
@@ -607,7 +612,8 @@ class ProductProduct(models.Model):
                     sum_orders_qty += order.product_qty
                     # If we get the sum of products on orders and
                     if sum_orders_qty >= units_to_arrive:
-                        hand_time = days_to_arrive + 1
+                        hand_time = days_to_arrive + 1 if days_to_arrive > 0 else 1
+                        break
 
         # If we haven't hand_time we need get it of seller delay
         if not hand_time and self.product_tmpl_id.seller_ids:
@@ -673,71 +679,12 @@ class ProductProduct(models.Model):
 
         return None
 
-    def export_products_from_supplierinfo(self):
-        if self.name.automatic_export_products and (self.product_id.barcode or self.product_tmpl_id.barcode):
-            for marketplace in self.name.backend_id.marketplace_ids:
-                supr = self.env['amazon.feed.tothrow'].search([('backend_id', '=', self.name.backend_id.id),
-                                                               ('type', '=', 'Add_products_csv'),
-                                                               ('launched', '=', False),
-                                                               ('model', '=', self.product_id._name),
-                                                               ('identificator', '=', self.product_id.id),
-                                                               ('marketplace_id', '=', marketplace.id)])
-
-                data = {'sku':self.product_id.default_code or self.product_id.product_variant_id.default_code}
-                data['product-id'] = self.product_id.barcode or self.product_tmpl_id.barcode
-                data['product-id-type'] = 'EAN'
-                price = self.product_id.product_variant_id._calc_amazon_price(backend=self.name.backend_id,
-                                                                              margin=self.name.backend_id.max_margin or AMAZON_DEFAULT_PERCENTAGE_MARGIN,
-                                                                              marketplace=marketplace,
-                                                                              percentage_fee=AMAZON_DEFAULT_PERCENTAGE_FEE)
-                data['price'] = ("%.2f" % price).replace('.', marketplace.decimal_currency_separator) if price else ''
-                data['minimum-seller-allowed-price'] = ''
-                data['maximum-seller-allowed-price'] = ''
-                data['item-condition'] = '11'  # We assume the products are new
-                data['quantity'] = '0'  # The products stocks allways is 0 when we export these
-                data['add-delete'] = 'a'
-                data['will-ship-internationally'] = ''
-                data['expedited-shipping'] = ''
-                data['merchant-shipping-group-name'] = ''
-                handling_time = self.product_id.product_variant_id._compute_amazon_handling_time() or ''
-                data['handling-time'] = str(handling_time) if price else ''
-                data['item_weight'] = ''
-                data['item_weight_unit_of_measure'] = ''
-                data['item_volume'] = ''
-                data['item_volume_unit_of_measure'] = ''
-                data['id_mws'] = marketplace.id_mws
-                vals = {'backend_id':self.name.backend_id.id,
-                        'type':'Add_products_csv',
-                        'model':self.product_id._name,
-                        'identificator':self.product_id.id,
-                        'marketplace_id':marketplace.id,
-                        'data':data,
-                        }
-                if supr:
-                    supr.write(vals)
-                else:
-                    self.env['amazon.feed.tothrow'].create(vals)
-
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     is_amazon_product = fields.Boolean(store=True,
                                        default=lambda self:True if self.product_variant_id.amazon_bind_ids else False)
-
-
-class ProductPriceList(models.Model):
-    _inherit = 'product.pricelist'
-
-    amazon_bind_ids = fields.One2many(
-        comodel_name='amazon.product.product.detail',
-        inverse_name='odoo_id',
-        string='Amazon Bindings',
-    )
-
-    sku = fields.Char('Product reference on Amazon')
-
-    marketplace_price_id = fields.Many2one('amazon.config.marketplace', "marketplace_id")
 
 
 class AmazonProductUoM(models.Model):
@@ -750,8 +697,8 @@ class AmazonProductUoM(models.Model):
 class AmazonOffer(models.Model):
     _name = 'amazon.product.offer'
 
-    product_detail_id = fields.Many2one('amazon.product.product.detail')
-    historic_id = fields.Many2one('amazon.historic.product.offer')
+    product_detail_id = fields.Many2one('amazon.product.product.detail', ondelete='cascade')
+    historic_id = fields.Many2one('amazon.historic.product.offer', ondelete='cascade')
     id_seller = fields.Char()
     price = fields.Float()
     currency_price_id = fields.Many2one('res.currency')
@@ -771,7 +718,7 @@ class AmazonHistoricOffer(models.Model):
     _name = 'amazon.historic.product.offer'
 
     offer_date = fields.Datetime()
-    product_detail_id = fields.Many2one('amazon.product.product.detail')
+    product_detail_id = fields.Many2one('amazon.product.product.detail', ondelete='cascade')
     offer_ids = fields.One2many(comodel_name='amazon.product.offer',
                                 inverse_name='historic_id',
                                 string='Offers of the product')
