@@ -29,8 +29,9 @@ class SaleOrderBatchImporter(Component):
         _logger.info('get report of saleorders returned %s', sales.keys())
         for sale in sales.iteritems():
             sale_binding_model = self.env['amazon.sale.order']
-            delayable = sale_binding_model.with_delay(priority=5, eta=datetime.now())
-            delayable.import_record(self.backend_record, sale)
+            if not self.backend_record.check_same_import_jobs(model=sale_binding_model._name, key=sale[0] if isinstance(sale, (tuple, list)) else sale):
+                delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now() + timedelta(minutes=2))
+                delayable.import_record(self.backend_record, sale)
 
         if filters.get('update_sales_flag'):
             # Get sales with more than 4 days and states updatables
@@ -63,8 +64,9 @@ class SaleOrderBatchImporter(Component):
                     aux_sales = self.backend_adapter.read(order_ids)
                     for sale in aux_sales:
                         if sale['order_id'] not in jobs:
-                            delayable = sale_binding_model.with_delay(priority=5, eta=datetime.now() + timedelta(seconds=10))
-                            delayable.import_record(self.backend_record, (sale['order_id'], sale))
+                            if not self.backend_record.check_same_import_jobs(model=sale_binding_model._name, key=sale['order_id']):
+                                delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now() + timedelta(seconds=10))
+                                delayable.import_record(self.backend_record, (sale['order_id'], sale))
                 except Exception as e:
                     # If there are errors we break the loop and we are going to finish to get sales to update
                     break
@@ -470,7 +472,7 @@ class SaleOrderLineImportMapper(Component):
     def fee(self, record):
         if record.get('sku') and record.get('marketplace_id'):
             marketplace_id = self.env['amazon.config.marketplace'].search([('id_mws', '=', record['marketplace_id'])])
-            product = self.env['amazon.product.product.detail'].search([('sku', '=', record['sku']), ('marketplace_id', '=', marketplace_id.id)])
+            product = self.env['amazon.product.product.detail'].search([('product_id.sku', '=', record['sku']), ('marketplace_id', '=', marketplace_id.id)])
             if product:
                 fee = product.total_fee or \
                       (float(record.get('item_price') or 0.) + float(record.get('ship_price') or 0.) *

@@ -38,8 +38,8 @@ class ReportBatchImporter(Component):
                     product_binding_model = self.env['amazon.product.product']
                     for product in products:
                         if not aux_dict.get(product['sku']):
-                            delayable = product_binding_model.with_delay(priority=5, eta=datetime.now())
-                            delayable.import_record(backend, product['sku'])
+                            # delayable = product_binding_model.with_delay(priority=5, eta=datetime.now())
+                            # delayable.import_record(backend, product['sku'])
                             aux_dict[product['sku']] = True
                 else:
                     _logger.info('search for amazon products %s has returned nothing',

@@ -22,23 +22,6 @@ class ProductStockExporter(Component):
                                         filters={'method':'submit_stock_update', 'arguments':[prod_stock]})
 
 
-class ProductPriceExporter(Component):
-    _name = 'amazon.product.price.exporter'
-    _inherit = 'amazon.exporter'
-    _usage = 'amazon.product.price.export'
-    _apply_on = 'amazon.product.product'
-
-    def run(self, records):
-        """ Change the prices on Amazon.
-        :param records: list of dictionaries of products with structure [{'sku': sku1, 'price': 3.99, 'currency': 'EUR', 'id_mws': market_id},{...}]
-        """
-        feed_exporter = self.component(model_name='amazon.feed')
-        # feed_exporter.export_batch(backend=self.backend_record, filters=prod_stock) # Prod version
-        feed_exporter.export_batch(backend=self.backend_record,
-                                   filters={'method':'submit_price_update',
-                                            'arguments':records[0]})  # Test one product
-
-
 class ProductStockPriceExporter(Component):
     _name = 'amazon.product.stock.price.exporter'
     _inherit = 'amazon.exporter'
