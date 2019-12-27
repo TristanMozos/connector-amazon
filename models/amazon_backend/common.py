@@ -2,7 +2,6 @@
 # © 2018 Halltic eSolutions S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import ast
-import inspect
 import logging
 from datetime import datetime, timedelta
 
@@ -11,7 +10,6 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.addons.connector.checkpoint import checkpoint
 
-from odoo.addons.queue_job.job import STARTED, ENQUEUED, PENDING
 from ...components.backend_adapter import AmazonAPI
 
 _logger = logging.getLogger(__name__)
@@ -116,18 +114,6 @@ class AmazonBackend(models.Model):
          "A backend with the same sale prefix already exists")
     ]
 
-    def check_same_import_jobs(self, model, key, backend=None):
-        if not backend:
-            backend = self
-        job = self.env['queue.job'].search([('channel', '=', 'root.amazon'),
-                                            ('state', 'in', (STARTED, ENQUEUED, PENDING)),
-                                            ('func_string', 'ilike', str(backend)),
-                                            ('model_name', 'ilike', model),
-                                            ('func_string', 'ilike', key)])
-        if job:
-            return True
-        return False
-
     def get_templates_from_products(self):
         self._cr.execute(""" SELECT DISTINCT
                                 apd.marketplace_id, 
@@ -194,8 +180,8 @@ class AmazonBackend(models.Model):
 
     @api.multi
     def _import_export_product_product(self):
+        import_start_time = datetime.now()
         for backend in self:
-            _logger.info('Report is going to generated for %s at %s' % backend.name, datetime.now())
             user = backend.warehouse_id.company_id.user_tech_id
             if not user:
                 user = self.env['res.users'].browse(self.env.uid)
@@ -213,16 +199,12 @@ class AmazonBackend(models.Model):
                 filters['report_id'] = [report_id['report_ids']]  # Send a list for getattr call
                 delayable.import_batch(backend, filters=filters)
 
-            _logger.info('Report has been generated for %s at %s' % backend.name, datetime.now())
-
-        _logger.info('Report is done')
         sup_products = self.env['product.supplierinfo'].search([('name.supplier', '=', True),
                                                                 ('name.automatic_export_products', '=', True),
                                                                 ('product_id.amazon_bind_ids', '=', False)])
 
         for sup_product in sup_products:
-            _logger.info('Report has been generated for %s at %s' % backend.name, datetime.now())
-            sup_product.export_products_from_supplierinfo()
+            sup_product.product_id.export_products_from_supplierinfo()
 
         # On Amazon we haven't a modified date on products and we need import all inventory
         # To import this, we need throw a report request, when this had been generated, we import all the product data
@@ -263,7 +245,7 @@ class AmazonBackend(models.Model):
                 report_id = report_binding_model.import_batch(backend, filters=filters)
 
                 if report_id:
-                    delayable = report_binding_model.with_delay(priority=4, eta=datetime.now() + timedelta(minutes=5))
+                    delayable = report_binding_model.with_delay(priority=5, eta=datetime.now() + timedelta(minutes=5))
                     filters = {'method':'get_sales'}
                     filters['report_id'] = [report_id['report_ids']]
                     delayable.import_batch(backend, filters=filters)
@@ -342,12 +324,11 @@ class AmazonBackend(models.Model):
             if user != self.env.user:
                 product_binding_model = product_binding_model.sudo(user)
             # We are going to import the initial prices, fees and prices changes
-            product_binding_model.import_changesex_prices_record(backend)
+            product_binding_model.import_changes_prices_record(backend)
 
     @api.multi
     def _throw_feeds(self):
         for backend in self:
-            _logger.info('Connector-amazon [%s] log: Throw feeds init with %s backend' % (inspect.stack()[0][3], backend.name))
             user = backend.warehouse_id.company_id.user_tech_id
             if not user:
                 user = self.env['res.users'].browse(self.env.uid)
@@ -355,54 +336,18 @@ class AmazonBackend(models.Model):
             feeds_to_throw = self.env['amazon.feed.tothrow'].search([('backend_id', '=', backend.id),
                                                                      ('launched', '=', False),
                                                                      ('type', 'in', ['Update_stock', 'Update_stock_price', 'Add_products_csv'])])
-
-            data_update_stock = {}
-            data_update_stock_price = {}
-            add_products_to_inventory = {}
-
-            # In the next loop we are going to construct the structure to throw the feed, we are going to filter the duplicate data per market and sku
+            data_update_stock = []
+            data_update_stock_price = []
+            add_products_to_inventory = []
             for feed_to_throw in feeds_to_throw:
-                element = ast.literal_eval(feed_to_throw.data)
-                element['create_date'] = feed_to_throw.create_date
-
                 if feed_to_throw.type == 'Update_stock':
-                    # If there isn't the markeplace added we add this
-                    if not data_update_stock.get(element['id_mws']):
-                        data_update_stock[element['id_mws']] = {}
-
-                    # We check if the sku is added on this marketplace
-                    if not data_update_stock[element['id_mws']].get(element['sku']):
-                        data_update_stock[element['id_mws']][element['sku']] = element
-                    elif data_update_stock[element['id_mws']][element['sku']]['create_date'] < element['create_date']:
-                        data_update_stock[element['id_mws']].pop(element['sku'])
-                        data_update_stock[element['id_mws']][element['sku']] = element
-
+                    data_update_stock.append(ast.literal_eval(feed_to_throw.data))
                 elif feed_to_throw.type == 'Update_stock_price':
-                    # If there isn't the markeplace added we add this
-                    if not data_update_stock_price.get(element['id_mws']):
-                        data_update_stock_price[element['id_mws']] = {}
-
-                    # We check if the sku is added on this marketplace
-                    if not data_update_stock_price[element['id_mws']].get(element['sku']):
-                        data_update_stock_price[element['id_mws']][element['sku']] = element
-                    elif data_update_stock_price[element['id_mws']][element['sku']]['create_date'] < element['create_date']:
-                        data_update_stock_price[element['id_mws']].pop(element['sku'])
-                        data_update_stock_price[element['id_mws']][element['sku']] = element
+                    data_update_stock_price.append(ast.literal_eval(feed_to_throw.data))
                 elif feed_to_throw.type == 'Add_products_csv':
-                    # If there isn't the markeplace added we add this
-                    if not add_products_to_inventory.get(element['id_mws']):
-                        add_products_to_inventory[element['id_mws']] = {}
-
-                    # We check if the sku is added on this marketplace
-                    if not add_products_to_inventory[element['id_mws']].get(element['sku']):
-                        add_products_to_inventory[element['id_mws']][element['sku']] = element
-                    elif add_products_to_inventory[element['id_mws']][element['sku']]['create_date'] < element['create_date']:
-                        add_products_to_inventory[element['id_mws']].pop(element['sku'])
-                        add_products_to_inventory[element['id_mws']][element['sku']] = element
-
-            _logger.info('Connector-amazon [%s] log: Update throw feeds to launched with %s backend' % (inspect.stack()[0][3], backend.name))
-            feeds_to_throw.write({'launched':True, 'date_launched':datetime.now().isoformat(sep=' ')})
-            _logger.info('Connector-amazon [%s] log: Finish update throw feeds to launched with %s backend' % (inspect.stack()[0][3], backend.name))
+                    add_products_to_inventory.append(ast.literal_eval(feed_to_throw.data))
+                feed_to_throw.launched = True
+                feed_to_throw.date_launched = datetime.now().isoformat(sep=' ')
 
             with backend.work_on(self._name) as work:
                 if data_update_stock:
@@ -411,11 +356,11 @@ class AmazonBackend(models.Model):
 
                 if data_update_stock_price:
                     exporter_stock_price = work.component(model_name='amazon.product.product', usage='amazon.product.stock.price.export')
-                    exporter_stock_price.run([data_update_stock_price])
+                    exporter_stock_price.run(data_update_stock_price)
 
                 if add_products_to_inventory:
                     exporter_product = work.component(model_name='amazon.product.product', usage='amazon.product.export')
-                    ids = exporter_product.run([add_products_to_inventory])
+                    ids = exporter_product.run(add_products_to_inventory)
                     if not ids:
                         raise UserError(_('An error has been produced'))
 

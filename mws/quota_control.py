@@ -42,6 +42,8 @@ class ControlRequest(models.Model):
         except AssertionError:
             raise FailedJobError("The action %s doesn't exist on the quota control module (MWS)" % request_name)
 
+        self.env['amazon.control.date.request'].update({'backend_id':str(backend_id)})
+
         last_requests = self.env['amazon.control.date.request'].search([('backend_id', '=', backend_id),
                                                                         ('request_id', '=', control.id)],
                                                                        order='request_date desc',

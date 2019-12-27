@@ -126,16 +126,17 @@ class AmazonAPI(object):
 
         '''
         Dict structure
-        dict_products = {'A1RKKUPIHCS9HS':
-                        {'D5-0BJZ-39B4': {'sku': 'D5-0BJZ-39B4', 'Quantity': 2, 'id_mws':'A1RKKUPIHCS9HS'},
-                         'CH-N74Z-DD0S': {'sku': 'CH-N74Z-DD0S', 'Quantity': 5,'id_mws':'A1RKKUPIHCS9HS'},
-                         '9P-NBB6-095H': {'sku': '9P-NBB6-095H', 'Quantity': 4, 'id_mws': 'A1RKKUPIHCS9HS'}}}
+        dict_products = [{'sku': 'D5-0BJZ-39B4', 'Quantity': 2, 'id_mws':'A1RKKUPIHCS9HS'},
+                         {'sku': 'CH-N74Z-DD0S', 'Quantity': 5,'id_mws':'A1RKKUPIHCS9HS'},
+                         {'sku': '9P-NBB6-095H', 'Quantity': 4, 'id_mws': 'A1RKKUPIHCS9HS'}]
         '''
         ids = []
-        for id_market in dict_products.keys():
+        for market in self._backend.marketplace_ids:
+            products = filter(lambda x:x['id_mws'] == market.id_mws, dict_products)  # Output: [{'name': 'python', 'points': 10}]
+
             i = 1
 
-            for product in dict_products[id_market].values():
+            for product in products:
                 message = etree.SubElement(top, 'Message')
                 messageID = etree.SubElement(message, 'MessageID')
                 messageID.text = str(i)
@@ -158,10 +159,10 @@ class AmazonAPI(object):
 
             response = feedsApi.submit_feed(feed=xml,
                                             feed_type='_POST_INVENTORY_AVAILABILITY_DATA_',
-                                            marketplaceids=[id_market])
+                                            marketplaceids=[market.id_mws])
 
             ids.append({'id_feed':self._save_feed(response=response, params=str(arguments), xml_csv=xml) or 'Error',
-                        'id_mws':id_market})
+                        'id_mws':market.id_mws})
 
         return ids
 
@@ -183,19 +184,14 @@ class AmazonAPI(object):
 
         '''
         Dict structure
-        dict_products = {
-                         'A1RKKUPIHCS9HS': {
-                            'D5-0BJZ-39B4': 
-                                    {'sku': 'D5-0BJZ-39B4', 'price': '84.80', currency:'EUR', 'id_mws':'A1RKKUPIHCS9HS'},
-                            'CH-N74Z-DD0S': 
-                                    {'sku': 'CH-N74Z-DD0S', 'price': '24,45', currency:'EUR', 'id_mws':'A1RKKUPIHCS9HS'}
-                            }
-                        }
+        dict_products = [{'sku': 'D5-0BJZ-39B4', 'price': '84.80', currency:'EUR', 'id_mws':'A1RKKUPIHCS9HS'},
+                         {'sku': 'CH-N74Z-DD0S', 'price': '24,45', currency:'EUR', 'id_mws':'A1RKKUPIHCS9HS'}]
         '''
         feed_ids = []
-        for id_market in dict_products.keys():
+        for market in self._backend.marketplace_ids:
+            products = filter(lambda x:x['id_mws'] == market.id_mws, dict_products)  # Output: [{'name': 'python', 'points': 10}]
             i = 1
-            for product in dict_products[id_market].values():
+            for product in products:
                 message = etree.SubElement(top, 'Message')
                 messageID = etree.SubElement(message, 'MessageID')
                 messageID.text = int(i)
@@ -207,9 +203,9 @@ class AmazonAPI(object):
 
                 sku = etree.SubElement(price, 'SKU')
                 sku.text = product['sku']
-                standard_price = etree.SubElement(price, 'StandardPrice')
-                standard_price.text = product['price']
-                standard_price.set('currency', product['currency'])
+                standar_price = etree.SubElement(price, 'StandardPrice')
+                standar_price.text = product['price']
+                standar_price.set('currency', product['currency'])
                 i += 1
 
             xml = etree.tostring(top, pretty_print=True, xml_declaration=True, encoding='UTF-8')
@@ -219,7 +215,7 @@ class AmazonAPI(object):
 
             response = feedsApi.submit_feed(feed=xml,
                                             feed_type='_POST_PRODUCT_PRICING_DATA_',
-                                            marketplaceids=[id_market])
+                                            marketplaceids=[market.id_mws])
 
             feed_ids.append(self._save_feed(response=response, params=str(arguments), xml_csv=xml))
 
@@ -241,26 +237,28 @@ class AmazonAPI(object):
                          {'sku': 'CH-N74Z-DD0S', 'price': '24,45', 'Quantity': 5, 'id_mws':'A1RKKUPIHCS9HS', 'handling_time':4}]
         '''
         feed_ids = []
-        for id_market in dict_products.keys():
+        for market in self._backend.marketplace_ids:
+            products = filter(lambda x:x['id_mws'] == market.id_mws, dict_products)  # Output: [{'name': 'python', 'points': 10}]
 
-            titles = ('sku', 'price', 'minimum-seller-allowed-price', 'maximum-seller-allowed-price', 'quantity', 'fulfillment-channel', 'leadtime-to-ship')
-            csv = '\t'
-            csv = csv.join(titles) + '\n'
+            if products:
+                titles = ('sku', 'price', 'minimum-seller-allowed-price', 'maximum-seller-allowed-price', 'quantity', 'fulfillment-channel', 'leadtime-to-ship')
+                csv = '\t'
+                csv = csv.join(titles) + '\n'
 
-            for product in dict_products[id_market].values():
-                data = '\t'
-                product_data = (product.get('sku') or '', product.get('Price') or '', product.get('minimum-seller-allowed-price') or '',
-                                product.get('maximum-seller-allowed-price') or '', product.get('Quantity') or '0',
-                                product.get('fulfillment-channel') or '',
-                                product.get('handling-time') or '')
-                data = data.join(product_data) + '\n'
-                csv = csv + data
+                for product in products:
+                    data = '\t'
+                    product_data = (product.get('sku') or '', product.get('Price') or '', product.get('minimum-seller-allowed-price') or '',
+                                    product.get('maximum-seller-allowed-price') or '', product.get('Quantity') or '0',
+                                    product.get('fulfillment-channel') or '',
+                                    product.get('handling-time') or '')
+                    data = data.join(product_data) + '\n'
+                    csv = csv + data
 
-            response = feedsApi.submit_feed(feed=csv,
-                                            feed_type='_POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA_',
-                                            marketplaceids=[id_market])
+                response = feedsApi.submit_feed(feed=csv,
+                                                feed_type='_POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA_',
+                                                marketplaceids=[market.id_mws])
 
-            feed_ids.append(self._save_feed(response=response, params=str(arguments), xml_csv=csv))
+                feed_ids.append(self._save_feed(response=response, params=str(arguments), xml_csv=csv))
 
         return feed_ids
 
@@ -281,52 +279,54 @@ class AmazonAPI(object):
                          {'sku': 'CH-N74Z-DD0S', 'product-id-type': 'ASIN', 'product-id': 'B44S70ERQA', 'item-condition': '11', 'price': '24,45', 'Quantity': 5, 'id_mws':'A1RKKUPIHCS9HS', 'handling_time':4}]
         '''
         feed_ids = []
-        for id_market in dict_products.keys():
+        for market in self._backend.marketplace_ids:
+            products = filter(lambda x:x['id_mws'] == market.id_mws, dict_products)  # Output: [{'name': 'python', 'points': 10}]
 
-            titles = ('sku', 'product-id', 'product-id-type', 'price', 'minimum-seller-allowed-price', 'maximum-seller-allowed-price', 'item-condition',
-                      'quantity', 'add-delete', 'will-ship-internationally', 'expedited-shipping', 'item-note', 'merchant-shipping-group-name',
-                      'product_tax_code', 'fulfillment_center_id', 'handling-time', 'batteries_required', 'are_batteries_included',
-                      'battery_cell_composition', 'battery_type', 'number_of_batteries', 'battery_weight', 'battery_weight_unit_of_measure',
-                      'number_of_lithium_ion_cells', 'number_of_lithium_metal_cells', 'lithium_battery_packaging', 'lithium_battery_energy_content',
-                      'lithium_battery_energy_content_unit_of_measure', 'lithium_battery_weight', 'lithium_battery_weight_unit_of_measure',
-                      'supplier_declared_dg_hz_regulation1', 'supplier_declared_dg_hz_regulation2', 'supplier_declared_dg_hz_regulation3',
-                      'supplier_declared_dg_hz_regulation4', 'supplier_declared_dg_hz_regulation5', 'hazmat_united_nations_regulatory_id', 'handling-time',
-                      'safety_data_sheet_url', 'item_weight', 'item_weight_unit_of_measure', 'item_volume', 'item_volume_unit_of_measure', 'flash_point',
-                      'ghs_classification_class1', 'ghs_classification_class2', 'ghs_classification_class3', 'list_price', 'uvp_list_price')
-            csv = '\t'
-            csv = csv.join(titles) + '\n'
+            if products:
+                titles = ('sku', 'product-id', 'product-id-type', 'price', 'minimum-seller-allowed-price', 'maximum-seller-allowed-price', 'item-condition',
+                          'quantity', 'add-delete', 'will-ship-internationally', 'expedited-shipping', 'item-note', 'merchant-shipping-group-name',
+                          'product_tax_code', 'fulfillment_center_id', 'handling-time', 'batteries_required', 'are_batteries_included',
+                          'battery_cell_composition', 'battery_type', 'number_of_batteries', 'battery_weight', 'battery_weight_unit_of_measure',
+                          'number_of_lithium_ion_cells', 'number_of_lithium_metal_cells', 'lithium_battery_packaging', 'lithium_battery_energy_content',
+                          'lithium_battery_energy_content_unit_of_measure', 'lithium_battery_weight', 'lithium_battery_weight_unit_of_measure',
+                          'supplier_declared_dg_hz_regulation1', 'supplier_declared_dg_hz_regulation2', 'supplier_declared_dg_hz_regulation3',
+                          'supplier_declared_dg_hz_regulation4', 'supplier_declared_dg_hz_regulation5', 'hazmat_united_nations_regulatory_id', 'handling-time',
+                          'safety_data_sheet_url', 'item_weight', 'item_weight_unit_of_measure', 'item_volume', 'item_volume_unit_of_measure', 'flash_point',
+                          'ghs_classification_class1', 'ghs_classification_class2', 'ghs_classification_class3', 'list_price', 'uvp_list_price')
+                csv = '\t'
+                csv = csv.join(titles) + '\n'
 
-            for product in dict_products[id_market].values():
-                data = '\t'
-                product_data = (product.get('sku') or '', product.get('product-id') or '', product.get('product-id-type') or '', product.get('price') or '',
-                                product.get('minimum-seller-allowed-price') or '', product.get('maximum-seller-allowed-price') or '',
-                                product.get('item-condition') or '',
-                                product.get('quantity') or '', product.get('add-delete') or '', product.get('will-ship-internationally') or '',
-                                product.get('expedited-shipping') or '', product.get('item-note') or '', product.get('merchant-shipping-group-name') or '',
-                                product.get('product_tax_code') or '', product.get('fulfillment_center_id') or '', product.get('handling-time') or '',
-                                product.get('batteries_required') or '', product.get('are_batteries_included') or '',
-                                product.get('battery_cell_composition') or '',
-                                product.get('battery_type') or '', product.get('number_of_batteries') or '', product.get('battery_weight') or '',
-                                product.get('battery_weight_unit_of_measure') or '', product.get('number_of_lithium_ion_cells') or '',
-                                product.get('number_of_lithium_metal_cells') or '', product.get('lithium_battery_packaging') or '',
-                                product.get('lithium_battery_energy_content') or '', product.get('lithium_battery_energy_content_unit_of_measure') or '',
-                                product.get('lithium_battery_weight') or '', product.get('lithium_battery_weight_unit_of_measure') or '',
-                                product.get('supplier_declared_dg_hz_regulation1') or '', product.get('supplier_declared_dg_hz_regulation2') or '',
-                                product.get('supplier_declared_dg_hz_regulation3') or '', product.get('supplier_declared_dg_hz_regulation4') or '',
-                                product.get('supplier_declared_dg_hz_regulation5') or '', product.get('hazmat_united_nations_regulatory_id') or '',
-                                ''  # second field handling-time, this need to be empty
-                                , product.get('safety_data_sheet_url') or '', product.get('item_weight') or '',
-                                product.get('item_weight_unit_of_measure') or '', product.get('item_volume') or '',
-                                product.get('item_volume_unit_of_measure') or '',
-                                product.get('flash_point') or '', product.get('ghs_classification_class1') or '',
-                                product.get('ghs_classification_class2') or '',
-                                product.get('ghs_classification_class3') or '', product.get('list_price') or '', product.get('uvp_list_price') or '', '\n')
-                data = data.join(product_data) + '\n'
-                csv = csv + data
+                for product in products:
+                    data = '\t'
+                    product_data = (product.get('sku') or '', product.get('product-id') or '', product.get('product-id-type') or '', product.get('price') or '',
+                                    product.get('minimum-seller-allowed-price') or '', product.get('maximum-seller-allowed-price') or '',
+                                    product.get('item-condition') or '',
+                                    product.get('quantity') or '', product.get('add-delete') or '', product.get('will-ship-internationally') or '',
+                                    product.get('expedited-shipping') or '', product.get('item-note') or '', product.get('merchant-shipping-group-name') or '',
+                                    product.get('product_tax_code') or '', product.get('fulfillment_center_id') or '', product.get('handling-time') or '',
+                                    product.get('batteries_required') or '', product.get('are_batteries_included') or '',
+                                    product.get('battery_cell_composition') or '',
+                                    product.get('battery_type') or '', product.get('number_of_batteries') or '', product.get('battery_weight') or '',
+                                    product.get('battery_weight_unit_of_measure') or '', product.get('number_of_lithium_ion_cells') or '',
+                                    product.get('number_of_lithium_metal_cells') or '', product.get('lithium_battery_packaging') or '',
+                                    product.get('lithium_battery_energy_content') or '', product.get('lithium_battery_energy_content_unit_of_measure') or '',
+                                    product.get('lithium_battery_weight') or '', product.get('lithium_battery_weight_unit_of_measure') or '',
+                                    product.get('supplier_declared_dg_hz_regulation1') or '', product.get('supplier_declared_dg_hz_regulation2') or '',
+                                    product.get('supplier_declared_dg_hz_regulation3') or '', product.get('supplier_declared_dg_hz_regulation4') or '',
+                                    product.get('supplier_declared_dg_hz_regulation5') or '', product.get('hazmat_united_nations_regulatory_id') or '',
+                                    ''  # second field handling-time, this need to be empty
+                                    , product.get('safety_data_sheet_url') or '', product.get('item_weight') or '',
+                                    product.get('item_weight_unit_of_measure') or '', product.get('item_volume') or '',
+                                    product.get('item_volume_unit_of_measure') or '',
+                                    product.get('flash_point') or '', product.get('ghs_classification_class1') or '',
+                                    product.get('ghs_classification_class2') or '',
+                                    product.get('ghs_classification_class3') or '', product.get('list_price') or '', product.get('uvp_list_price') or '', '\n')
+                    data = data.join(product_data) + '\n'
+                    csv = csv + data
 
                 response = feedsApi.submit_feed(feed=csv,
                                                 feed_type='_POST_FLAT_FILE_INVLOADER_DATA_',
-                                                marketplaceids=[id_market])
+                                                marketplaceids=[market.id_mws])
 
                 feed_ids.append(self._save_feed(response=response, params=str(arguments), xml_csv=csv))
 

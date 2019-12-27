@@ -2,7 +2,7 @@
 # Copyright 2018 Halltic eSolutions S.L.
 # © 2018 Halltic eSolutions S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-import inspect
+
 import logging
 import urllib2
 import base64
@@ -12,8 +12,6 @@ from datetime import datetime
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping
 from odoo.addons.connector.exception import InvalidDataError
-
-from ...mws.sqs import DEFAULT_ROUND_MESSAGES_TO_PROCESS
 
 _logger = logging.getLogger(__name__)
 
@@ -31,7 +29,6 @@ class ProductImportMapper(Component):
     _name = 'amazon.product.product.import.mapper'
     _inherit = 'amazon.import.mapper'
     _apply_on = ['amazon.product.product']
-    _map_child_usage = 'import.map.child.product.detail'
 
     direct = [('name', 'name'),
               ('asin', 'asin'),
@@ -60,66 +57,19 @@ class ProductImportMapper(Component):
 
     @mapping
     def odoo_id(self, record):
-        if record.get('odoo_id') and not record.get('id_product'):
+        if record.get('odoo_id'):
             return {'odoo_id':record['odoo_id']}
         return None
 
     @mapping
     def barcode(self, record):
-        if record.get('id_product'):
-            prod_barcode = self.env['product.template'].search([('barcode', '=', record['id_product'])])
-            if prod_barcode:
-                return {'odoo_id':prod_barcode.product_variant_id.id}
-            else:
+        if record.get('odoo_id'):
+            odoo_prod = self.env['product.product'].browse(record['odoo_id'])
+            if odoo_prod.barcode or odoo_prod.product_tmpl_id.barcode:
+                return {'barcode':odoo_prod.barcode or odoo_prod.product_tmpl_id.barcode}
+            elif record.get('id_product'):
                 return {'barcode':record['id_product']}
         return None
-
-
-class ImportMapChildProductDetail(Component):
-    """ :py:class:`MapChild` for the Imports """
-
-    _name = 'product.detail.map.child.import'
-    _inherit = 'base.map.child'
-    _usage = 'import.map.child.product.detail'
-
-    def _child_mapper(self):
-        """ Mandatory """
-        return self.component(usage='import.mapper')
-
-    def format_items(self, items_values):
-        """ Format the values of the items mapped from the child Mappers.
-
-        It can be overridden for instance to add the Odoo
-        relationships commands ``(6, 0, [IDs])``, ...
-
-        As instance, it can be modified to handle update of existing
-        items: check if an 'id' has been defined by
-        :py:meth:`get_item_values` then use the ``(1, ID, {values}``)
-        command
-
-        :param items_values: list of values for the items to create
-        :type items_values: list
-
-        """
-        values = []
-        for item in items_values:
-            detail = self.env['amazon.product.product.detail'].search([('product_id.sku', '=', item['sku']), ('marketplace_id', '=', item['marketplace_id'])])
-            if detail:
-                if item['price_ship'] != False:
-                    values.append((1, detail.id, {'status':item['status'],
-                                                  'stock':item['stock'],
-                                                  'price':item['price'],
-                                                  'price_ship':item['price_ship'],
-                                                  'merchant_shipping_group':item['merchant_shipping_group']}))
-                else:
-                    values.append((1, detail.id, {'status':item['status'],
-                                                  'stock':item['stock'],
-                                                  'price':item['price'],
-                                                  'merchant_shipping_group':item['merchant_shipping_group']}))
-            else:
-                values.append((0, 0, item))
-
-        return values
 
 
 class ProductImporter(Component):
@@ -128,13 +78,9 @@ class ProductImporter(Component):
     _apply_on = ['amazon.product.product']
 
     def _get_amazon_data(self):
-        _logger.info('Connector-amazon [%s] log: Get amazon data' % inspect.stack()[0][3])
         """ Return the raw Amazon data for ``self.external_id`` """
         if self.amazon_record:
             return self.amazon_record
-
-        _logger.info('Connector-amazon [%s] log: There aren\'t data for the product %s we are going to get from Amazon' %
-                     (self.external_id, inspect.stack()[0][3]))
         product = {'sku':self.external_id}
         default_market = self.backend_record._get_marketplace_default()
         product['marketplace_id'] = default_market.id
@@ -153,7 +99,6 @@ class ProductImporter(Component):
 
                 # Get ASIN from the first market with data
                 if not product.get('asin'):
-                    _logger.info('Connector-amazon [%s] log: Get amazon data to get ASIN' % inspect.stack()[0][3])
                     data_product = self.backend_adapter.get_products_for_id(arguments=[[self.external_id],
                                                                                        market.id_mws,
                                                                                        'SellerSKU'])
@@ -177,16 +122,27 @@ class ProductImporter(Component):
         We need test if the product is on odoo
         :return:
         """
-        # If there is a product that match default_code with sku we will link the product of odoo with new amazon product
-        products = self.env['product.product'].search([('default_code', '=like', self.amazon_record['sku'])])
 
-        # We link the products with the same amazon.sku and odoo.default_code
-        if products:
-            self.amazon_record['odoo_id'] = products[0].id
-        else:
-            products = self.env['product.product'].search([('default_code', '=like', self.amazon_record['sku'])])
-            if products:
-                self.amazon_record['odoo_id'] = products[0].product_tmpl_id.id
+        # If there is a product that match default_code with sku and barcode we will link the product of odoo with new amazon product
+        products = self.env['product.product'].search([('default_code', '=like', self.amazon_record['sku'])]) or \
+                   self.env['product.template'].search([('default_code', '=like', self.amazon_record['sku'])]).mapped('product_variant_id')
+
+        prod_aux = None
+
+        for market in self.backend_record.marketplace_ids:
+            # We are going to search products with the same amazon.sku and odoo.default_code and the same barcode
+            if products and not prod_aux:
+                for prod in products:
+                    if prod.barcode or prod.product_tmpl_id.barcode:
+                        test = self.backend_adapter.get_products_for_id(arguments=[[prod.barcode or prod.product_tmpl_id.barcode],
+                                                                                   market.id_mws,
+                                                                                   None])
+                        if test:
+                            prod_aux = prod
+                            break
+                # Assign the odoo search product to relation (amazon - odoo) product
+                if prod_aux:
+                    self.amazon_record['odoo_id'] = prod_aux.id
 
     def _get_binary_image(self, image_url):
         url = image_url.encode('utf8')
@@ -350,10 +306,18 @@ class ProductImporter(Component):
         binding = super(ProductImporter, self)._create(data)
         return binding
 
+    def _is_uptodate(self, binding):
+        if binding:
+            binding.product_tmpl_id.write({'is_amazon_product':True})
+            return True
+
     def _after_import(self, binding):
         """ Hook called at the end of the import """
         if self.amazon_record and self.amazon_record.get('marketplace_id'):
             self._write_product_data(binding, self.amazon_record.get('marketplace'))
+            importer = self.component(usage='amazon.assign.product.listprice')
+            for sub_binding in binding.product_product_market_ids:
+                importer.run(sub_binding)
 
         binding.product_tmpl_id.write({'is_amazon_product':True})
 
@@ -380,7 +344,8 @@ class ProductProductMarketImportMapper(Component):
     _inherit = 'amazon.import.mapper'
     _apply_on = 'amazon.product.product.detail'
 
-    direct = [('title', 'title'),
+    direct = [('sku', 'sku'),
+              ('title', 'title'),
               ('price_unit', 'price'),
               ('price_shipping', 'price_ship'),
               ('status', 'status'),
@@ -393,12 +358,57 @@ class ProductProductMarketImportMapper(Component):
               ('merchant_shipping_group', 'merchant_shipping_group'), ]
 
     @mapping
-    def sku(self, record):
-        return {'sku':record.get('sku')}
+    def names(self, record):
+        if record.get('sku') and record.get('marketplace_id'):
+            return {'name':record['sku'] + ' || ' + self.env['amazon.config.marketplace'].browse(record['marketplace_id']).name}
+        return
+
+    @mapping
+    def website_id(self, record):
+        return {'website_id':None}
+
+    @mapping
+    def item_ids(self, record):
+        pricelist = self.env['product.pricelist'].search([('sku', '=', record['sku']), ('marketplace_price_id', '=', record['marketplace_id'])])
+
+        now_time = datetime.now()
+        item = []
+        prc_items = [prc_item for prclst in pricelist if pricelist for prc_item in prclst.item_ids if not prc_item.date_end]
+        for p in prc_items:
+            item.append([1,
+                         p.id,
+                         {'date_end':now_time.isoformat(), }])
+
+        # The product type 'product' is the product to sell
+        item.append([0,
+                     0,
+                     {'applied_on':'1_product',
+                      'compute_price':'fixed',
+                      'min_quantity':1,
+                      'date_start':now_time.isoformat(),
+                      'fixed_price':record.get('price_unit'), }])
+        item.append([0,
+                     0,
+                     {'applied_on':'1_product',
+                      'compute_price':'fixed',
+                      'min_quantity':1,
+                      'date_start':now_time.isoformat(),
+                      'fixed_price':record.get('price_shipping'), }])
+
+        return {'item_ids':item}
 
     @mapping
     def marketplace_id(self, record):
         return {'marketplace_id':record.get('marketplace_id')}
+
+    @mapping
+    def marketplace_price_id(self, record):
+        '''
+        Return the marketplace to product_pricelist
+        :param record:
+        :return:
+        '''
+        return {'marketplace_price_id':record.get('marketplace_id')}
 
     @mapping
     def currency_id(self, record):
@@ -443,6 +453,10 @@ class ProductProductMarketImportMapper(Component):
         if record.get('fee') and record.get('price_unit'):
             return {'percentage_fee':round((record['fee']['Amount'] * 100) / (float(record['price_unit']) + float(record.get('price_shipping') or 0)))}
 
+    @mapping
+    def external_id(self, record):
+        return {'external_id':record['sku'] + '|-|' + str(self.env['amazon.config.marketplace'].browse(record['marketplace_id']).id)}
+
 
 class ProductDetailImporter(Component):
     _name = 'amazon.product.product.detail.importer'
@@ -454,6 +468,7 @@ class ProductDetailImporter(Component):
 
         :param external_id: identifier of the record on Amazon
         """
+
         if isinstance(external_id, (list, tuple)):
             self.external_id = external_id[0]
             self.amazon_record = external_id[1]
@@ -514,7 +529,7 @@ class ProductLowestPriceImporter(Component):
         '''
         try:
             if record.marketplace_id and not record.first_price_searched:
-                data = self.backend_adapter.get_lowest_price([record.product_id.sku, record.marketplace_id.id_mws])
+                data = self.backend_adapter.get_lowest_price([record.sku, record.marketplace_id.id_mws])
                 if data:
                     self._insert_first_price(record, data)
         except Exception as e:
@@ -525,17 +540,15 @@ class ProductLowestPriceImporter(Component):
 
     def _process_message(self, message):
         messages = message.search([('id_message', '=', message.id_message)])
-        message_to_process = False
         has_been_processed = False
         if len(messages) > 1:
             for mess in messages:
                 if mess.processed:
                     has_been_processed = True
-                    message_to_process = True
+                    message.processed = True
                 if mess.id != message.id:
                     mess.unlink()
         if not has_been_processed and message.body:
-            offer_to_delete = None
             root = ET.fromstring(message.body)
             notification = root.find('NotificationPayload').find('AnyOfferChangedNotification')
             offer_change_trigger = notification.find('OfferChangeTrigger')
@@ -549,6 +562,7 @@ class ProductLowestPriceImporter(Component):
                         # item_condition = offer_change_trigger.find('ItemCondition').text if offer_change_trigger.find('ItemCondition') != None else None
                         time_change = offer_change_trigger.find('TimeOfOfferChange').text if offer_change_trigger.find('TimeOfOfferChange') != None else None
                         time_change = datetime.strptime(time_change, "%Y-%m-%dT%H:%M:%S.%fZ")
+                        historic_offer = self.env['amazon.historic.product.offer'].create({'offer_date':time_change, 'product_detail_id':detail_prod.id})
 
                         summary = notification.find('Summary')
                         lowest_prices = summary.find('LowestPrices')
@@ -566,7 +580,6 @@ class ProductLowestPriceImporter(Component):
                                         low_price = float(aux)
                             detail_prod.lowest_price = low_price
 
-                        new_offers = []
                         for offer in root.iter('Offer'):
                             new_offer = {}
                             new_offer['id_seller'] = offer.find('SellerId').text
@@ -613,66 +626,71 @@ class ProductLowestPriceImporter(Component):
                                 new_offer['is_prime'] = is_prime
 
                             # We save the offer on historic register
-                            new_offers.append((0, 0, new_offer))
+                            historic_offer.write({'offer_ids':[(0, 0, new_offer)]})
 
-                        # We save the offers on historic offer
-                        self.env['amazon.historic.product.offer'].create({'offer_date':time_change,
-                                                                          'product_detail_id':detail_prod.id,
-                                                                          'offer_ids':new_offers})
-
-                        update_detail_prod = False
-                        # If we haven't actually offers, we create it
-                        if not detail_prod.offer_ids:
-                            update_detail_prod = True
                         # If the date of our offers is more late than date of change
-                        elif detail_prod.offer_ids and datetime.strptime(detail_prod.offer_ids[0].create_date, "%Y-%m-%d %H:%M:%S") < time_change:
-                            if offer_to_delete:
-                                offer_to_delete |= detail_prod.offer_ids
-                            else:
-                                offer_to_delete = detail_prod.offer_ids
-                            update_detail_prod = True
-
-                        if update_detail_prod:
-                            for offer in new_offers:
+                        if detail_prod.offer_ids:
+                            if detail_prod.offer_ids.filtered(lambda offer:datetime.strptime(detail_prod.create_date, "%Y-%m-%d %H:%M:%S") < time_change):
+                                for offer in detail_prod.offer_ids:
+                                    offer.unlink()
+                            for offer in historic_offer.offer_ids:
                                 # If it is our offer, we save the data on product
-                                if offer[2].get('id_seller') == detail_prod.product_id.backend_id.seller:
-                                    vals = {'price':offer[2].get('price'),
-                                            'price_ship':offer[2].get('price_ship'),
-                                            'has_buybox':offer[2].get('is_buybox'),
-                                            'has_lowest_price':offer[2].get('is_lower_price')}
+                                if offer.id_seller == detail_prod.product_id.backend_id.seller:
+                                    vals = {'price':offer.price,
+                                            'price_ship':offer.price_ship,
+                                            'has_buybox':offer.is_buybox,
+                                            'has_lowest_price':offer.is_lower_price}
                                     if not detail_prod.first_price_searched:
                                         vals['first_price_searched'] = True
-                            vals['offer_ids'] = new_offers
-                            detail_prod.write(vals)
+                                    detail_prod.write(vals)
 
-                    message_to_process = True
+                                detail_prod.write({'offer_ids':[(0, 0, {'id_seller':offer.id_seller,
+                                                                        'price':offer.price,
+                                                                        'currency_price_id':offer.currency_price_id.id,
+                                                                        'price_ship':offer.price_ship,
+                                                                        'currency_ship_price_id':offer.currency_ship_price_id.id,
+                                                                        'is_lower_price':offer.is_lower_price,
+                                                                        'is_buybox':offer.is_buybox,
+                                                                        'is_prime':offer.is_prime,
+                                                                        'seller_feedback_rating':offer.seller_feedback_rating,
+                                                                        'seller_feedback_count':offer.seller_feedback_count,
+                                                                        'country_ship_id':offer.country_ship_id.id,
+                                                                        'amazon_fulffilled':offer.amazon_fulffilled,
+                                                                        'condition':offer.condition,
+                                                                        })]})
 
-            offer_to_delete.unlink()
-
-        return message_to_process
+                    message.processed = True
 
     def run_process_messages_offers(self, backend):
-        env = self.env['amazon.config.sqs.message']
-        env._cr.execute(""" SELECT id
-                             FROM 
-                                amazon_config_sqs_message 
-                             WHERE create_date IN
-                                (SELECT DISTINCT create_date FROM amazon_config_sqs_message WHERE processed=False ORDER BY create_date ASC LIMIT %s)
-                                    """, [DEFAULT_ROUND_MESSAGES_TO_PROCESS])
+        messages = self.env['amazon.config.sqs.message'].search([('sqs_account_id.backend_id', '=', backend.id), ('processed', '=', False)])
+        for message in messages:
+            self._process_message(message)
 
-        messages = env._cr.dictfetchall()
-        rdset = None
 
-        for id_mes in messages:
-            message = env.browse(id_mes['id'])
-            if self._process_message(message):
-                if rdset:
-                    rdset |= message
-                else:
-                    rdset = message
+class ProductAssignPricelistImporter(Component):
+    '''
+    Importer to recover the price product and price ship and write it on pricelist
+    '''
+    _name = 'amazon.assign.product.pricelist.importer'
+    _inherit = 'amazon.importer'
+    _apply_on = ['amazon.product.product']
+    _usage = 'amazon.assign.product.listprice'
 
-        if rdset:
-            rdset.write({'processed':True})
+    def _assign_product_pricelist(self, binding):
+        com_ship = self.component(usage='order.line.builder.shipping')
+        ship_service = com_ship.env.ref('.'.join(com_ship.product_ref))
+        product_id_done = False
+        for item in binding.odoo_id.item_ids:
+            if not item.date_end:
+                if not product_id_done and binding.price == item.fixed_price:
+                    item.write({'product_tmpl_id':binding.product_id.odoo_id.product_tmpl_id.id})
+                    product_id_done = True
+                elif binding.price_ship == item.fixed_price:
+                    item.write({'product_tmpl_id':ship_service.product_tmpl_id.id})
+
+    def run(self, binding):
+        if binding and binding.odoo_id:
+            self._assign_product_pricelist(binding)
 
 
 class ProductPriceImporter(Component):
@@ -705,6 +723,5 @@ class ProductDataImporter(Component):
     _usage = 'amazon.product.data.import'
 
     def run_products_for_id(self, ids, type_id, marketplace_mws):
-        _logger.info('Connector-amazon [%s] log: Get products with ean to export these to Amazon' % inspect.stack()[0][3])
         products = self.backend_adapter.get_products_for_id(arguments=[ids, marketplace_mws, type_id])
         return products

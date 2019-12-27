@@ -64,16 +64,12 @@ class AmazonBinding(models.AbstractModel):
     @api.model
     def import_record(self, backend, external_id, force=False):
         """ Import a Amazon record """
-        exception = None
-        with backend.work_on(self._name) as work:
-            try:
+        try:
+            with backend.work_on(self._name) as work:
                 importer = work.component(usage='record.importer')
                 return importer.run(external_id, force=False)
-            except Exception as e:
-                exception = e
-
-        if exception:
-            raise exception
+        except Exception as e:
+            return e
 
     @job(default_channel='root.amazon')
     @api.multi

@@ -99,7 +99,6 @@
                 <field name="stock"/>
                 <field name="category_id"/>
                 <field name="merchant_shipping_group"/>
-                <field name="percentage_fee"/>
             </tree>
         </field>
     </record>

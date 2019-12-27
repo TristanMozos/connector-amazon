@@ -4,8 +4,6 @@
 from odoo import models, fields
 import boto3
 
-DEFAULT_ROUND_MESSAGES_TO_PROCESS = '10'
-
 
 class SQSAccount(models.Model):
     _name = 'amazon.config.sqs.account'
