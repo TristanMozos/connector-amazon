@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_amazon_backend_tree" model="ir.ui.view">
+        <field name="name">Amazon backend</field>
+        <field name="model">amazon.backend</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Backend">
+                <field name="name"/>
+                <field name="seller"/>
+                <field name="region"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_backend_form" model="ir.ui.view">
+        <field name="name">amazon.backend.form</field>
+        <field name="model">amazon.backend</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                   <field name="name"/>
+                </group>
+                <group>
+                    <group><field name="region"/></group>
+                </group>
+                <group><field name="access_key"/></group>
+                <group><field name="key" password="True"/></group>
+                <group><field name="seller"/></group>
+                <group><field name="token" password="True"/></group>
+                <group><field name="developer"/></group>
+                <group><field name="import_sales_from_date"/></group>
+                <group><field name="import_updated_sales_from_date"/></group>
+                <group><field name="team_id"/></group>
+                <group><field name="sale_prefix"/></group>
+                <group><field name="warehouse_id"/></group>
+                <group><field name="sqs_account_id"/></group>
+                <group><field name="stock_sync"/></group>
+                <group><field name="change_prices"/></group>
+                <group name="min_margin" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="min_margin"/></group>
+                <group name="max_margin" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="max_margin"/></group>
+                <group name="units_to_change" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="units_to_change"/></group>
+                <group name="min_price_margin_value" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="min_price_margin_value"/></group>
+                <group><field name="fba_warehouse_id"/></group>
+                <group><field name="marketplace_ids"/></group>
+                <group>
+                    <group>
+                        <field name="shipping_template_ids"/>
+                    </group>
+                    <group>
+                        <button string="Import templates"
+                                    type="object"
+                                    name="get_templates_from_products"
+                                    class="oe_highlight"/>
+                    </group>
+                </group>
+                <footer>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_import_products)d" string="Import Inventory" type="action" class="oe_highlight"/>
+                    </group>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
+                    </group>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_import_order)d" string="Import Order" type="action" class="oe_highlight"/>
+                    </group>
+                    <group>
+                        <button name="%(action_view_wizard_amazon_update_orders)d" string="Update Orders" type="action" class="oe_highlight"/>
+                    </group>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_backend" model="ir.actions.act_window">
+        <field name="name">Amazon Backends</field>
+        <field name="res_model">amazon.backend</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_backend_tree"/>
+    </record>
+
+</odoo>

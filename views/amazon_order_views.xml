@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_amazon_order_tree" model="ir.ui.view">
+        <field name="name">Orders</field>
+        <field name="model">amazon.sale.order</field>
+        <field name="arch" type="xml">
+            <tree string="Orders" create="false" sum="total_amount">
+                <field name="backend_id" string="Name account" />
+                <field name="id_amazon_order" string="Order Id" />
+                <field name="order_status_id" string="Order status" />
+                <field name="date_purchase" string="Purchase date" />
+                <field name="sales_channel" string="Sale chanel" />
+                <field name="date_latest_ship" string="Latest ship date" />
+                <field name="date_latest_delivery" string="Latest delivery date" />
+                <field name="total_amount" string="Total amount"/>
+                <field name="order_fee" string="Fee"/>
+                <field name="buyer_email" string="Buyer email"/>
+                <field name="fullfillment_channel" string="Fullfillment channel"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_order_line_tree" model="ir.ui.view">
+        <field name="name">Order line</field>
+        <field name="model">amazon.sale.order.line</field>
+        <field name="arch" type="xml">
+            <tree string="Orders" create="false">
+                <field name="id_item" string="Item id" />
+                <field name="amazon_product_id" string="Amazon product" />
+                <field name="qty_shipped" string="Quantity shipped" />
+                <field name="qty_ordered" string="Quantity ordered" />
+                <field name="item_price" string="Item price" sum="Total item price" widget="monetary"/>
+                <field name="ship_price" string="Ship price" sum="Total ship price" widget="monetary"/>
+                <field name="fee" string="Fee" sum="Total fee" widget="monetary"/>
+            </tree>
+        </field>
+    </record>
+
+
+
+    <record id="view_amazon_order_form" model="ir.ui.view">
+        <field name="name">amazon.sale.order.form</field>
+        <field name="model">amazon.sale.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="id_amazon_order" string="Order Id" /></group>
+                <group><field name="odoo_id"/></group>
+                <group><field name="backend_id" string="Name account" /></group>
+                <group><field name="order_status_id" string="Order status" /></group>
+                <group><field name="date_purchase" string="Purchase date" /></group>
+                <group><field name="sales_channel" string="Sale chanel" /></group>
+                <group><field name="date_latest_ship" string="Lastest ship date" /></group>
+                <group><field name="date_latest_delivery" string="Lastest ship delivery" /></group>
+                <group>
+                    <group><field name="buyer_name"/></group>
+                    <group><field name="buyer_email"/></group>
+                </group>
+                <group><field name="order_fee" string="Order fee" /></group>
+                <group><field name="amazon_order_line_ids" string="Order lines" /></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_order" model="ir.actions.act_window">
+        <field name="name">Amazon Orders</field>
+        <field name="res_model">amazon.sale.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_order_tree"/>
+    </record>
+
+
+
+</odoo>

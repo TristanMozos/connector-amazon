@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- PRODUCTS -->
+    <record id="view_amazon_product_product_search" model="ir.ui.view">
+        <field name="name">amazon.product.product.search</field>
+        <field name="model">amazon.product.product</field>
+        <field name="arch" type="xml">
+            <search string="Search Amazon Products">
+                <field name="sku"/>
+                <field name="asin"/>
+                <field name="odoo_id" string="Odoo product"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_amazon_product_tree" model="ir.ui.view">
+        <field name="name">amazon.product.product.tree</field>
+        <field name="model">amazon.product.product</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Product">
+                <field name="backend_id"/>
+                <field name="odoo_id"/>
+                <field name="asin"/>
+                <field name="sku"/>
+                <field name="brand"/>
+                <field name="amazon_qty"/>
+                <field name="height"/>
+                <field name="length"/>
+                <field name="weight"/>
+                <field name="width"/>
+                <field name="handling_time"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_product_form" model="ir.ui.view">
+        <field name="name">amazon.product.product.form</field>
+        <field name="model">amazon.product.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="backend_name"/></group>
+                <group><field name="odoo_id"/></group>
+                <group><field name="asin"/></group>
+                <group><field name="sku"/></group>
+                <group><field name="brand"/></group>
+                <group><field name="amazon_qty"/></group>
+                <group><field name="height"/></group>
+                <group><field name="length"/></group>
+                <group><field name="weight"/></group>
+                <group><field name="width"/></group>
+                <group><field name="handling_time"/></group>
+                <group><field name="stock_sync"/></group>
+                <group><field name="change_prices"/></group>
+                <group name="min_margin" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="min_margin"/></group>
+                <group name="max_margin" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="max_margin"/></group>
+                <group name="units_to_change" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="units_to_change"/></group>
+                <group name="min_price_margin_value" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="min_price_margin_value"/></group>
+                <field name="product_product_market_ids"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_product" model="ir.actions.act_window">
+        <field name="name">Amazon Products</field>
+        <field name="res_model">amazon.product.product</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_product_tree"/>
+    </record>
+
+    <record id="view_amazon_product_marketplace_form" model="ir.ui.view">
+        <field name="name">amazon.product.product.form</field>
+        <field name="model">amazon.product.product.detail</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="product_id"/></group>
+                <group><field name="title"/></group>
+                <group><field name="price"/><field name="currency_price"/><field name="min_allowed_price"/><field name="max_allowed_price"/></group>
+                <group><field name="price_ship"/><field name="currency_ship_price"/></group>
+                <group><field name="marketplace_id"/><field name="status"/></group>
+                <group><field name="stock"/><field name="has_buybox"/><field name="has_lowest_price"/></group>
+                <group><field name="buybox_price"/><field name="lowest_price"/></group>
+                <group><field name="merchant_shipping_group"/></group>
+                <group><field name="stock_sync"/></group>
+                <group><field name="change_prices"/></group>
+                <group name="min_margin" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="min_margin"/></group>
+                <group name="max_margin" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="max_margin"/></group>
+                <group name="units_to_change" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="units_to_change"/></group>
+                <group name="min_price_margin_value" attrs="{'invisible': [('change_prices', '=', False)]}"><field name="min_price_margin_value"/></group>
+                <group><field name="total_fee"/><field name="percentage_fee"/></group>
+                <group><field name="offer_ids"/></group>
+                <group><field name="historic_offer_ids"/></group>
+            </form>
+        </field>
+    </record>
+
+    <!-- PRODUCT MARKETPLACE DATA -->
+    <record id="view_amazon_product_marketplace_tree" model="ir.ui.view">
+        <field name="name">Amazon product marketplace data</field>
+        <field name="model">amazon.product.product.detail</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Marketplace Product Data" editable="bottom">
+                <field name="title"/>
+                <field name="price"/>
+                <field name="price_ship"/>
+                <field name="total_price"/>
+                <field name="currency_price"/>
+                <field name="change_prices" string="Automatic change price"/>
+                <field name="margin_amount" readonly="1" force_save="1"/>
+                <field name="margin_percentage" readonly="0"/>
+                <field name="has_lowest_price" readonly="1"/>
+                <field name="lowest_price" readonly="1"/>
+                <field name="has_buybox" readonly="1"/>
+                <field name="buybox_price" readonly="1"/>
+                <field name="marketplace_id" readonly="1"/>
+                <field name="status" readonly="1"/>
+                <field name="stock"/>
+                <field name="merchant_shipping_group" readonly="1"/>
+                <field name="percentage_fee" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_amazon_product_marketplace" model="ir.actions.act_window">
+        <field name="name">Amazon product marketplace data</field>
+        <field name="res_model">amazon.product.product.detail</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_product_marketplace_tree"/>
+    </record>
+
+    <record id="view_offer_product_tree" model="ir.ui.view">
+        <field name="name">Amazon product offer</field>
+        <field name="model">amazon.product.offer</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Product Offer">
+                <field name="is_our_offer"/>
+                <field name="id_seller"/>
+                <field name="price"/>
+                <field name="price_ship"/>
+                <field name="currency_price_id"/>
+                <field name="is_buybox"/>
+                <field name="is_prime"/>
+                <field name="seller_feedback_rating"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_historic_offer_product_tree" model="ir.ui.view">
+        <field name="name">Amazon historic product offer</field>
+        <field name="model">amazon.historic.product.offer</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Product Offer">
+                <field name="offer_date"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>

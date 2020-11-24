@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_amazon_feed_tree" model="ir.ui.view">
+        <field name="name">Amazon feeds</field>
+        <field name="model">amazon.feed</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Feeds">
+                <field name="backend_id"/>
+                <field name="id_feed_submision"/>
+                <field name="type"/>
+                <field name="submitted_date"/>
+                <field name="feed_processing_status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_feed_form" model="ir.ui.view">
+        <field name="name">amazon.feed.form</field>
+        <field name="model">amazon.feed</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="backend_id"/>
+                    <field name="id_feed_submision"/>
+                    <field name="type"/>
+                </group>
+                <group>
+                    <field name="submitted_date"/>
+                    <field name="feed_processing_status"/>
+                </group>
+                <group>
+                    <field name="feed_result_id"/>
+                </group>
+                <group><field name="params"/></group>
+                <group><field name="xml_csv"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_feed" model="ir.actions.act_window">
+        <field name="name">Amazon Feeds</field>
+        <field name="res_model">amazon.feed</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_feed_tree"/>
+    </record>
+
+
+    <record id="view_amazon_feed_tothrow_tree" model="ir.ui.view">
+        <field name="name">Amazon feeds to throw</field>
+        <field name="model">amazon.feed.tothrow</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Feeds To Throw">
+                <field name="backend_id"/>
+                <field name="type"/>
+                <field name="model"/>
+                <field name="identificator"/>
+                <field name="marketplace_id"/>
+                <field name="launched"/>
+                <field name="date_launched"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_feed_tothrow_form" model="ir.ui.view">
+        <field name="name">amazon.feed.tothrow.form</field>
+        <field name="model">amazon.feed.tothrow</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="backend_id"/>
+                    <field name="type"/>
+                </group>
+                <group>
+                    <field name="model"/>
+                    <field name="identificator"/>
+                    <field name="marketplace_id"/>
+                </group>
+                <group>
+                    <field name="launched"/>
+                    <field name="date_launched"/>
+                </group>
+                <group><field name="data"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_throw_feed" model="ir.actions.act_window">
+        <field name="name">Amazon Feeds To Throw</field>
+        <field name="res_model">amazon.feed.tothrow</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_feed_tothrow_tree"/>
+    </record>
+
+
+</odoo>

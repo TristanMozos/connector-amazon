@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_product_template_search_barcode" model="ir.ui.view">
+        <field name="name">product.template.search.barcode</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="barcode"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_amazon_filter" model="ir.ui.view">
+        <field name="name">product.template.search.amazon</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_purchase']" position="after">
+                <separator/>
+                <filter string="Amazon products" name="filter_amazon_products" domain="[('is_amazon_product', '=', True)]"/>
+                <filter string="Non Amazon products" name="filter_non_amazon_products" domain="[('is_amazon_product', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_form_view" model="ir.ui.view">
+        <field name="name">product.template.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <page name="sales" position="after">
+                <page string="Amazon"
+                      name="amazon"
+                      groups="connector_amazon.group_connector_amazon_user"
+                      attrs="{'invisible': [('amazon_bind_id', '=', False)]}">
+                    <group>
+                        <button name="%(action_delete_amazon_product)d"
+                                type="object"
+                                confirm="Are you sure that you want to delete this product?"
+                                string="Delete from Amazon"
+                                class="oe_highlight"/>
+
+                        <field name="amazon_bind_id"/>
+                        <field name="product_product_market_ids" widget="one2many_list"/>
+
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>
+

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Amazon Menu -->
+    <menuitem id="menu_amazon_root"
+        parent="connector.menu_connector_root"
+        name="Amazon"
+        sequence="10"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <!-- Config submenu -->
+    <menuitem id="menu_amazon_configuration"
+        name="Configuration"
+        parent="menu_amazon_root"
+        sequence="20"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <menuitem id="menu_amazon_config"
+              name="Amazon Settings"
+              parent="menu_amazon_configuration"
+              action="action_amazon_configuration" />
+
+     <menuitem id="menu_amazon_marketplace"
+        name="Marketplace"
+        parent="menu_amazon_configuration"
+        action="action_amazon_marketplace"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <menuitem id="menu_amazon_mws_control_quota"
+        name="MWS control quota config"
+        parent="menu_amazon_configuration"
+        action="action_amazon_mws_control_quota"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <menuitem id="menu_amazon_sqs_account"
+        name="SQS Account"
+        parent="menu_amazon_configuration"
+        action="action_amazon_sqs_account"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <menuitem id="menu_amazon_brand_ban"
+        name="Product brand ban"
+        parent="menu_amazon_configuration"
+        action="action_amazon_brand_ban"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <!-- Backends submenu -->
+    <menuitem id="menu_amazon_backend"
+        name="Backends"
+        parent="menu_amazon_root"
+        action="action_amazon_backend"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <!-- Products submenu -->
+    <menuitem id="menu_amazon_products"
+        parent="menu_amazon_root"
+        name="Products"
+        sequence="30"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <menuitem id="menu_amazon_products_on_amazon"
+        parent="menu_amazon_products"
+        name="Amazon products"
+        action="action_amazon_product"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+
+    <menuitem id="menu_amazon_products_market"
+        parent="menu_amazon_products"
+        name="Products marketplace data"
+        action="action_amazon_product_marketplace"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <!-- Orders submenu -->
+    <menuitem id="menu_amazon_orders"
+        name="Orders"
+        parent="menu_amazon_root"
+        action="action_amazon_order"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <menuitem id="menu_amazon_partners"
+        name="Partners"
+        parent="menu_amazon_root"
+        action="action_amazon_partner"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <!-- Returns submenu -->
+    <menuitem id="menu_amazon_returns"
+        name="Returns"
+        parent="menu_amazon_root"
+        action="action_amazon_return"/>
+
+    <!-- Feeds submenu -->
+    <menuitem id="menu_amazon_feeds"
+        parent="menu_amazon_root"
+        name="Feeds"
+        sequence="40"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <menuitem id="menu_amazon_feeds_launched"
+        parent="menu_amazon_feeds"
+        name="Feeds launched"
+        action="action_amazon_feed"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+    <menuitem id="menu_amazon_feeds_to_throw"
+        parent="menu_amazon_feeds"
+        name="Feeds to throw"
+        action="action_amazon_throw_feed"
+        groups="connector_amazon.group_connector_amazon_manager"/>
+
+</odoo>

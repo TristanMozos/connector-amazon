@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_migrate_backend_products_form" model="ir.ui.view">
+        <field name="name" >Wizard Import Orders</field>
+        <field name="model" >amazon.migrate.backend.products.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="backend_id"/>
+                        <field name="marketplace_ids"/>
+                    </group>
+                    <group>
+                        <field name="product_ids"/>
+                    </group>
+                    <footer>
+                        <button special="cancel" string="Cancelar"/>
+                        <button name="migrate_products"
+                                type="object"
+                                confirm="Are you sure that you want migrate these products?"
+                                string="Migrate"
+                                class="oe_highlight"/>
+                    </footer>
+               </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_wizard_migrate_backend_products_amazon" model="ir.actions.act_window">
+        <field name="name">Wizard to migrate backend's products</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">amazon.product.product</field>
+        <field name="src_model">amazon.migrate.backend.products.wizard</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="connector_amazon.view_amazon_product_form"/>
+        <field name="target">current</field>
+        <field name="multi">True</field>
+        <field name="key2">client_action_multi</field>
+    </record>
+
+    <record id="action_get_products_to_migrate_backend_wizard" model="ir.actions.server">
+        <field name="name">Migrate backend</field>
+        <field name="model_id" ref="connector_amazon.model_amazon_product_product"/>
+        <field name="state">code</field>
+        <field name="condition">True</field>
+        <field name="code">action = env.get('amazon.migrate.backend.products.wizard').get_amazon_products_to_migrate()</field>
+    </record>
+
+    <record id="dditem_migrate_backend_amazon_products" model="ir.values">
+        <field name="name">name</field>
+        <field name="model">amazon.product.product</field>
+        <field name="key" >action</field>
+        <field name="key2">client_action_multi</field>
+        <field name="value" eval="'ir.actions.server,%d'%action_get_products_to_migrate_backend_wizard"/>
+    </record>
+
+    <record id="action_supplier_products_to_migrate_backend_wizard" model="ir.actions.server">
+        <field name="name">Migrate Amazon backend products</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="state">code</field>
+        <field name="condition">object.supplier</field>
+        <field name="code">action = env.get('amazon.migrate.backend.products.wizard').get_products_from_supplier_to_migrate()</field>
+    </record>
+
+    <record id="dditem_supplier_migrate_backend_amazon_products" model="ir.values">
+        <field name="name">name</field>
+        <field name="model">res.partner</field>
+        <field name="key" >action</field>
+        <field name="key2">client_action_multi</field>
+        <field name="value" eval="'ir.actions.server,%d'%action_supplier_products_to_migrate_backend_wizard"/>
+    </record>
+
+</odoo>

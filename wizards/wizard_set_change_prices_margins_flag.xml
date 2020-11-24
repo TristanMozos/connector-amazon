@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="wizard_set_margins_to_prod_form" model="ir.ui.view">
+        <field name="name">Wizard set margins to products</field>
+        <field name="model">amazon.change.prices.flag.margins.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Set margins">
+                <group string="The products of supplier set these fields.">
+                    <field name="change_prices"/>
+                    <field name="min_margin" attrs="{'invisible': [('change_prices', '!=', '1')]}"/>
+                    <field name="max_margin" attrs="{'invisible': [('change_prices', '!=', '1')]}"/>
+                    <field name="min_price_margin_value" attrs="{'invisible': [('change_prices', '!=', '1')]}"/>
+                </group>
+                <footer>
+                    <button name="change_price_margins" string="Set to products" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_wizard_set_margins" model="ir.actions.act_window">
+       <field name="name">Wizard set margins</field>
+       <field name="type">ir.actions.act_window</field>
+       <field name="res_model">amazon.change.prices.flag.margins.wizard</field>
+       <field name="view_type">form</field>
+       <field name="view_mode">form</field>
+       <field name="target">new</field>
+    </record>
+</odoo>

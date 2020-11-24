@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+       <!-- REPORTS -->
+		<record id="amazon_request_submit_feed" model='amazon.control.request'>
+            <field name="request_name">SubmitFeed</field>
+            <field name="max_quota">15</field>
+			<field name="restore_rate">120</field>
+            <field name="max_request_quota_time">30</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_request_report" model='amazon.control.request'>
+            <field name="request_name">RequestReport</field>
+            <field name="max_quota">15</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">60</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_get_report_request_list" model='amazon.control.request'>
+            <field name="request_name">GetReportRequestList</field>
+            <field name="max_quota">10</field>
+			<field name="restore_rate">45</field>
+            <field name="max_request_quota_time">80</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_get_report" model='amazon.control.request'>
+            <field name="request_name">GetReport</field>
+            <field name="max_quota">15</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">60</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_get_report_list" model='amazon.control.request'>
+            <field name="request_name">GetReportList</field>
+            <field name="max_quota">10</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">60</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <!-- PRODUCTS -->
+        <record id="amazon_request_get_maching_product_for_id" model='amazon.control.request'>
+            <field name="request_name">GetMatchingProductForId</field>
+            <field name="max_quota">20</field>
+			<field name="restore_rate">0.5</field>
+            <field name="max_request_quota_time">18000</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_get_my_price_for_sku" model='amazon.control.request'>
+            <field name="request_name">GetMyPriceForSKU</field>
+            <field name="max_quota">20</field>
+			<field name="restore_rate">0.1</field>
+            <field name="max_request_quota_time">36000</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_get_my_feeds_estimate" model='amazon.control.request'>
+            <field name="request_name">GetMyFeesEstimate</field>
+            <field name="max_quota">20</field>
+			<field name="restore_rate">0.2</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="max_request_quota_time">36000</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+
+        <record id="amazon_request_get_product_categories_for_sku" model='amazon.control.request'>
+            <field name="request_name">GetProductCategoriesForSKU</field>
+            <field name="max_quota">20</field>
+			<field name="restore_rate">5</field>
+            <field name="max_request_quota_time">720</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+        <record id="amazon_request_get_lowest_price_offers_for_sku" model='amazon.control.request'>
+            <field name="request_name">GetLowestPricedOffersForSKU</field>
+            <field name="max_quota">10</field>
+			<field name="restore_rate">0.2</field>
+            <field name="max_request_quota_time">200</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+        <record id="amazon_request_get_lowest_offer_listings_for_sku" model='amazon.control.request'>
+            <field name="request_name">GetLowestOfferListingsForSKU</field>
+            <field name="max_quota">20</field>
+			<field name="restore_rate">0.1</field>
+            <field name="max_request_quota_time">36000</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+        <record id="amazon_request_list_orders" model='amazon.control.request'>
+            <field name="request_name">ListOrders</field>
+            <field name="max_quota">6</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">-1</field>
+            <field name="max_request_quota_units">-1</field>
+            <field name="units_of_mesaure_quota"></field>
+        </record>
+        <record id="amazon_request_list_orders_by_next_token" model='amazon.control.request'>
+            <field name="request_name">ListOrdersByNextToken</field>
+            <field name="max_quota">6</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">-1</field>
+            <field name="max_request_quota_units">-1</field>
+            <field name="units_of_mesaure_quota"></field>
+        </record>
+
+        <record id="amazon_request_list_order_items" model='amazon.control.request'>
+            <field name="request_name">ListOrderItems</field>
+            <field name="max_quota">30</field>
+			<field name="restore_rate">2</field>
+            <field name="max_request_quota_time">-1</field>
+            <field name="max_request_quota_units">-1</field>
+            <field name="units_of_mesaure_quota"></field>
+        </record>
+        <record id="amazon_request_get_order" model='amazon.control.request'>
+            <field name="request_name">GetOrder</field>
+            <field name="max_quota">6</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">-1</field>
+            <field name="max_request_quota_units">-1</field>
+            <field name="units_of_mesaure_quota"></field>
+        </record>
+        <record id="amazon_request_get_feed_submmission_result" model='amazon.control.request'>
+            <field name="request_name">GetFeedSubmissionResult</field>
+            <field name="max_quota">15</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">60</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+        <record id="amazon_request_list_matching_products" model='amazon.control.request'>
+            <field name="request_name">ListMatchingProducts</field>
+            <field name="max_quota">20</field>
+			<field name="restore_rate">60</field>
+            <field name="max_request_quota_time">60</field>
+            <field name="max_request_quota_units">1</field>
+            <field name="units_of_mesaure_quota">hor</field>
+        </record>
+    </data>
+</odoo>

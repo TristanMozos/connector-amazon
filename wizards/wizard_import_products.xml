@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="wizard_import_products_form" model="ir.ui.view">
+        <field name="name" >Wizard Import Products</field>
+        <field name="model" >amazon.products.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <footer>
+                        <button special="cancel" string="Cancelar"/>
+                        <button name="import_inventory"
+                                type="object"
+                                string="Import inventory"
+                                class="oe_highlight"/>
+                    </footer>
+               </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_wizard_amazon_import_products" model="ir.actions.act_window">
+        <field name="name">Wizard to import products</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">amazon.products.import.wizard</field>
+        <field name="src_model">amazon.product.product</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="wizard_import_products_form"/>
+        <field name="target">new</field>
+        <field name="multi">True</field>
+        <field name="key2">client_action_multi</field>
+    </record>
+
+</odoo>

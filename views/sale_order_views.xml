@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form" model="ir.ui.view">
+    <field name="name">connector_amazon.sale_order.form</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_form"/>
+    <field name="arch" type="xml">
+        <field name="confirmation_date" position="after">
+            <field name="amazon_bind_id" string="Amazon sale" attrs="{'invisible': [('amazon_bind_id', '=', False)]}"/>
+        </field>
+    </field>
+</record>
+
+</odoo>

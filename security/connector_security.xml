@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_connector_amazon" model="ir.module.category">
+        <field name="name">Connector Amazon</field>
+    </record>
+
+    <record id="group_connector_amazon_manager" model="res.groups">
+        <field name="name">Connector Amazon Manager</field>
+        <field name="category_id" ref="module_category_connector_amazon"/>
+        <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    </record>
+
+    <record id="group_connector_amazon_user" model="res.groups">
+        <field name="name">Connector Amazon User</field>
+        <field name="category_id" ref="module_category_connector_amazon"/>
+        <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    </record>
+
+    <record id="connector_amazon.group_connector_amazon_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_connector_amazon_user'))]"/>
+    </record>
+
+</odoo>
