@@ -532,6 +532,8 @@ class ProductExporter(Component):
         """
         assert record
         if record.get('method'):
+            import wdb
+            wdb.set_trace()
             if record['method'] == 'add_to_amazon_listing':
                 assert record['product_id']
                 self._add_listing_to_amazon(record)

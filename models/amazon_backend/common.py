@@ -231,7 +231,7 @@ class AmazonBackend(models.Model):
         sup_products = self.env['product.supplierinfo'].search([('name.supplier', '=', True),
                                                                 '|',
                                                                 ('name.automatic_export_products', '=', True),
-                                                                ('name.automatic_export_all_markets', '=', True),], order='product_id')
+                                                                ('name.automatic_export_all_markets', '=', True), ], order='product_id')
 
         product_id = 0
         for sup_product in sup_products:

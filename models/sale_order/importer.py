@@ -465,6 +465,7 @@ class SaleOrderImporter(Component):
         else:
             self.external_id = external_id
         _super = super(SaleOrderImporter, self)
+
         return _super.run(self.external_id, force)
 
 

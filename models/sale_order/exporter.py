@@ -117,10 +117,13 @@ class SaleExporter(Component):
             self.env['amazon.report.product.to.create'].create(vals)
             return
 
+    @api.model
     def run(self, record):
         """ Change the prices on Amazon.
         :param records: list of dictionaries of products with structure
         """
+        import wdb
+        wdb.set_trace()
         assert record
         if record.get('method'):
             if record['method'] == 'add_to_amazon_listing':
