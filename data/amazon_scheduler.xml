@@ -28,6 +28,19 @@
             <field eval="'()'" name="args"/>
         </record>
 
+        <record id="ir_cron_get_customer_feedback_orders" model="ir.cron">
+            <field name="name">Amazon - Import feedbacks from customer orders</field>
+            <field name="active" eval="False" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">12</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doal">1</field>
+            <field name="model" eval="'amazon.backend'" />
+            <field name="function" eval="'_scheduler_get_customer_feedback_orders'" />
+            <field name="args" eval="" />
+        </record>
+
         <record model="ir.cron" id="ir_cron_amz_export_product_product" forcecreate="True">
             <field name="name">Amazon -  Export Products</field>
             <field eval="False" name="active"/>
@@ -107,16 +120,16 @@
             <field name="args" eval="" />
         </record>
 
-        <record id="scheduler_get_initial_prices_action" model="ir.cron">
-            <field name="name">Amazon - Throw jobs for get prices of products the first time</field>
+        <record id="scheduler_get_products_fee_action" model="ir.cron">
+            <field name="name">Amazon - Get products fee</field>
             <field name="active" eval="False" />
             <field name="user_id" ref="base.user_root" />
-            <field name="interval_number">60</field>
-            <field name="interval_type">minutes</field>
+            <field name="interval_number">24</field>
+            <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
             <field name="doal">1</field>
             <field name="model" eval="'amazon.backend'" />
-            <field name="function" eval="'_scheduler_get_initial_prices_and_fees'" />
+            <field name="function" eval="'_scheduler_get_products_fee'" />
             <field name="args" eval="" />
         </record>
 

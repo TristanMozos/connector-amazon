@@ -109,4 +109,23 @@
         action="action_amazon_throw_feed"
         groups="connector_amazon.group_connector_amazon_manager"/>
 
+    <!-- Performance submenu -->
+    <menuitem id="menu_amazon_performance"
+        parent="menu_amazon_root"
+        name="Performance"
+        sequence="50"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <menuitem id="menu_amazon_feedbacks"
+        parent="menu_amazon_performance"
+        name="Feedbacks"
+        action="action_amazon_feedbacks"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <!--menuitem id="menu_amazon_feeds_to_throw"
+        parent="menu_amazon_feeds"
+        name="Feeds to throw"
+        action="action_amazon_throw_feed"
+        groups="connector_amazon.group_connector_amazon_manager"/-->
+
 </odoo>

@@ -239,7 +239,7 @@ class AmazonProductProduct(models.Model):
     def get_market_detail_product(self, market):
         if market:
             market_id = None
-            if not isinstance(market, (int, float)):
+            if not isinstance(market, (int,float)):
                 market_id = market.id
             else:
                 market_id = market

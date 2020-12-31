@@ -19,7 +19,7 @@ from lxml import etree
 from odoo import api
 from odoo.addons.component.core import AbstractComponent
 from odoo.addons.queue_job.exception import FailedJobError, RetryableJobError
-from odoo.fields import Datetime
+from odoo.fields import Datetime, Date
 from odoo.modules.registry import RegistryManager
 
 # from ..models.config.common import MAX_NUMBER_SQS_MESSAGES_TO_RECEIVE
@@ -45,11 +45,15 @@ AMAZON_ORDER_ID_PATTERN = '^([\d]{3}-[\d]{7}-[\d]{7})+$'
 
 AMAZON_SUBMIT_REPORT_METHOD_DICT = {'submit_inventory_request':'_GET_MERCHANT_LISTINGS_ALL_DATA_',
                                     'submit_sales_request':'_GET_FLAT_FILE_ORDERS_DATA_',
-                                    'submit_updated_sales_request':'_GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_'}
+                                    'submit_updated_sales_request':'_GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_',
+                                    'submit_feedbacks_report_request':'_GET_SELLER_FEEDBACK_DATA_',
+                                    'submit_metrics_account_request':'_GET_V1_SELLER_PERFORMANCE_REPORT_',
+                                    'submit_fee_product_request':'_GET_REFERRAL_FEE_PREVIEW_REPORT_'}
 
 AMAZON_METHOD_LIST = ['get_inventory',
                       'get_sales',
                       'get_order',
+                      'get_customer_feedbacks',
                       'get_products_for_id',
                       'list_items_from_order',
                       'get_category_product',
@@ -82,10 +86,21 @@ class AmazonAPI(object):
     def __exit__(self, *args, **kwargs):
         return self
 
-    def _get_odoo_date_format(self, iso_date):
+    @api.model
+    def _get_odoo_datetime_format(self, iso_date):
         if iso_date:
             try:
                 str_date = Datetime.to_string(dateutil.parser.parse(iso_date))
+                return str_date
+            except:
+                return ''
+        return ''
+
+    @api.model
+    def _get_odoo_date_format(self, iso_date):
+        if iso_date:
+            try:
+                str_date = Date.to_string(dateutil.parser.parse(iso_date))
                 return str_date
             except:
                 return ''
@@ -428,13 +443,13 @@ class AmazonAPI(object):
                 row['minimum-seller-allowed-price'] = ''
                 row['maximum-seller-allowed-price'] = ''
                 row['item-condition'] = '11'  # We assume the products are new
-                row['quantity'] = amazon_product.amazon_qty
+                row['quantity'] = str(int(amazon_product.amazon_qty or 0))
                 row['add-delete'] = 'a'
                 row['will-ship-internationally'] = ''
                 row['expedited-shipping'] = ''
                 row['merchant-shipping-group-name'] = ''
                 handling_time = amazon_product.odoo_id._compute_amazon_handling_time() or ''
-                row['handling-time'] = str(handling_time) if price else amazon_product.handling_time
+                row['handling-time'] = str(int(handling_time or 0)) if price else amazon_product.handling_time
                 row['item_weight'] = ''
                 row['item_weight_unit_of_measure'] = ''
                 row['item_volume'] = ''
@@ -713,14 +728,16 @@ class AmazonAPI(object):
             csv_data = '\t'
             csv_data = csv_data.join(titles) + '\n'
 
+            import wdb
+            wdb.set_trace()
             for product in dict_products[id_market].values():
                 data = '\t'
                 product_data = (product.get('sku') or '', product.get('product-id') or '', product.get('product-id-type') or '', product.get('price') or '',
                                 product.get('minimum-seller-allowed-price') or '', product.get('maximum-seller-allowed-price') or '',
                                 product.get('item-condition') or '',
-                                product.get('quantity') or '', product.get('add-delete') or '', product.get('will-ship-internationally') or '',
+                                str(product.get('quantity') or 0) or '', product.get('add-delete') or '', product.get('will-ship-internationally') or '',
                                 product.get('expedited-shipping') or '', product.get('item-note') or '', product.get('merchant-shipping-group-name') or '',
-                                product.get('product_tax_code') or '', product.get('fulfillment_center_id') or '', product.get('handling-time') or '',
+                                product.get('product_tax_code') or '', product.get('fulfillment_center_id') or '', str(product.get('handling-time') or 0) or '',
                                 product.get('batteries_required') or '', product.get('are_batteries_included') or '',
                                 product.get('battery_cell_composition') or '',
                                 product.get('battery_type') or '', product.get('number_of_batteries') or '', product.get('battery_weight') or '',
@@ -1121,11 +1138,11 @@ class AmazonAPI(object):
 
     def _get_order_data_from_dict(self, order_dict, with_items=True):
         order = {'order_id':order_dict.getvalue('AmazonOrderId')}
-        order['date_order'] = self._get_odoo_date_format(order_dict.getvalue('PurchaseDate'))
-        order['earlest_ship_date'] = self._get_odoo_date_format(order_dict.getvalue('EarliestShipDate'))
-        order['lastest_ship_date'] = self._get_odoo_date_format(order_dict.getvalue('LatestShipDate'))
-        order['earlest_delivery_date'] = self._get_odoo_date_format(order_dict.getvalue('EarliestDeliveryDate'))
-        order['lastest_delivery_date'] = self._get_odoo_date_format(order_dict.getvalue('LatestDeliveryDate'))
+        order['date_order'] = self._get_odoo_datetime_format(order_dict.getvalue('PurchaseDate'))
+        order['earlest_ship_date'] = self._get_odoo_datetime_format(order_dict.getvalue('EarliestShipDate'))
+        order['lastest_ship_date'] = self._get_odoo_datetime_format(order_dict.getvalue('LatestShipDate'))
+        order['earlest_delivery_date'] = self._get_odoo_datetime_format(order_dict.getvalue('EarliestDeliveryDate'))
+        order['lastest_delivery_date'] = self._get_odoo_datetime_format(order_dict.getvalue('LatestDeliveryDate'))
         order['order_status_id'] = self._backend.env['amazon.config.order.status'].search([('name', '=', order_dict.getvalue('OrderStatus'))]).id
         order['is_prime'] = order_dict.getvalue('IsPrime')
         order['is_premium'] = order_dict.getvalue('IsPremiumOrder')
@@ -1570,7 +1587,7 @@ class AmazonAPI(object):
 
     def _get_product_market_data_line(self, encoding, marketplace, line):
 
-        date_created = self._get_odoo_date_format(line['date_created'.decode(encoding)])
+        date_created = self._get_odoo_datetime_format(line['date_created'.decode(encoding)])
 
         return {
             'sku':line['sku'],
@@ -1586,6 +1603,33 @@ class AmazonAPI(object):
             'date_created':date_created,
         }
         return
+
+    def _get_header_feedback_fieldnames(self):
+        return [
+            'date',
+            'qualification',
+            'comments',
+            'respond',
+            'order-id',
+            'customer-email',
+        ]
+
+    def _extract_info_feedbacks(self, data, feedbacks):
+        # encoding = data[0]
+        reader = data[1]
+        if not feedbacks:
+            feedbacks = {}
+        import wdb
+        wdb.set_trace()
+        for line in reader:
+            if not feedbacks.get(line['order-id']):
+                feedbacks[line['order-id']]={'feedback_date':self._get_odoo_date_format(line['date']),
+                                                      'qualification':line['qualification'],
+                                                      'message':line['comments'],
+                                                      'respond':line['respond'],
+                                                      'amazon_sale_id': line['order-id'],
+                                                      'email':line['customer-email']}
+        return feedbacks
 
     def _get_header_sales_fieldnames(self):
         return [
@@ -1652,13 +1696,13 @@ class AmazonAPI(object):
 
                 sales[line['order-id']] = {
                     'order_id':line['order-id'],
-                    'date_order':self._get_odoo_date_format(line['purchase-date']),
+                    'date_order':self._get_odoo_datetime_format(line['purchase-date']),
                     'currency':line['currency'],
                     'items_purchased':line['quantity-purchased'],
-                    'earlest_ship_date':self._get_odoo_date_format(line['earliest-ship-date']),
-                    'lastest_ship_date':self._get_odoo_date_format(line['latest-ship-date']),
-                    'earlest_delivery_date':self._get_odoo_date_format(line['earliest-delivery-date']),
-                    'lastest_delivery_date':self._get_odoo_date_format(line['latest-delivery-date']),
+                    'earlest_ship_date':self._get_odoo_datetime_format(line['earliest-ship-date']),
+                    'lastest_ship_date':self._get_odoo_datetime_format(line['latest-ship-date']),
+                    'earlest_delivery_date':self._get_odoo_datetime_format(line['earliest-delivery-date']),
+                    'lastest_delivery_date':self._get_odoo_datetime_format(line['latest-delivery-date']),
                     'ship_service_level':line['ship-service-level'],
                     'FulfillmentChannel':line['fulfilled-by'] or 'MFN',
                     'marketplace_id':marketplace_id,
@@ -1722,6 +1766,15 @@ class AmazonAPI(object):
             if data:
                 sales = self._extract_info_sales(data=data, sales=sales, marketplace_id=report_id[1])
         return sales
+
+    def _get_customer_feedbacks(self, report_ids):
+        assert report_ids
+        feedbacks = {}
+        for report_id in report_ids:
+            data = self._get_data_report(report_id[0], headers=self._get_header_feedback_fieldnames())
+            if data:
+                feedbacks = self._extract_info_feedbacks(data=data, feedbacks=feedbacks)
+        return feedbacks
 
     def _amazon_sale_order_search(self, arguments):
         return self._list_orders(arguments=arguments)

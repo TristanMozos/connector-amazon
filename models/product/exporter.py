@@ -157,10 +157,10 @@ class ProductStockPriceExporter(Component):
         if our_offer == current_offers:
             margin_max = detail.max_margin or detail.product_id.max_margin or detail.product_id.backend_id.max_margin
             try_price = detail.product_id.odoo_id._calc_amazon_price(backend=detail.product_id.backend_id,
-                                                                     margin=margin_max,
-                                                                     marketplace=detail.marketplace_id,
-                                                                     percentage_fee=detail.percentage_fee or AMAZON_DEFAULT_PERCENTAGE_FEE,
-                                                                     ship_price=detail.price_ship)
+                                                           margin=margin_max,
+                                                           marketplace=detail.marketplace_id,
+                                                           percentage_fee=detail.percentage_fee or AMAZON_DEFAULT_PERCENTAGE_FEE,
+                                                           ship_price=detail.price_ship)
 
             # The price will be changed on listener TODO test it
             detail.price = try_price

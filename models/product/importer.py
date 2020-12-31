@@ -355,6 +355,11 @@ class ProductImporter(Component):
             raise InvalidDataError
 
     def _create(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         data['type'] = 'product'
         binding = super(ProductImporter, self)._create(data)
         return binding
@@ -521,10 +526,10 @@ class ProductLowestPriceImporter(Component):
             vals[2]['is_lower_price'] = True
             new_offers.append(vals)
 
-        res = self.env['amazon.historic.product.offer'].create({'offer_date': datetime.now().isoformat(),
-                                                                'product_detail_id': record.id,
-                                                                'offer_ids': new_offers,
-                                                                'message_body': 'Direct MWS'})
+        res = self.env['amazon.historic.product.offer'].create({'offer_date':datetime.now().isoformat(),
+                                                                'product_detail_id':record.id,
+                                                                'offer_ids':new_offers,
+                                                                'message_body':'Direct MWS'})
 
         return res
 
@@ -576,7 +581,9 @@ class ProductPriceImporter(Component):
                 vals['percentage_fee'] = round((prices['fee']['Amount'] * 100) / (price_unit + price_ship or 0))
                 vals['total_fee'] = prices['fee']['Final']
             # If there are changes on prices or fee we are going to update this
-            if vals and ((vals.get('percentage_fee') and detail.percentage_fee != vals['percentage_fee']) or detail.price != vals['price'] or detail.price_ship != vals['price_ship']):
+            if vals and (
+                    (vals.get('percentage_fee') and detail.percentage_fee != vals['percentage_fee']) or detail.price != vals['price'] or detail.price_ship !=
+                    vals['price_ship']):
                 vals['last_update_price_date'] = datetime.now().isoformat()
                 model = detail.with_context(connector_no_export=True)
                 model.write(vals)
