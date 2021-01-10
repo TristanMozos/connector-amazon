@@ -72,7 +72,20 @@ class AmazonProductProduct(models.Model):
 
     handling_time = fields.Integer('Time to get since we received an order to send this')
 
+    #is_backend_duplicated = fields.Boolean(store=True, compute='_compute_if_duplicated_backend', required=True, default=False)
+
     RECOMPUTE_QTY_STEP = 1000  # products at a time
+
+
+    @api.multi
+    def _compute_if_duplicated_backend(self):
+        import wdb
+        wdb.set_trace()
+        for prod in self:
+            products = prod.search([('asin','=',prod.asin)])
+            if len(products)>1:
+                prod.is_backend_duplicated = True
+            prod.is_backend_duplicated = False
 
     @job(default_channel='root.amazon')
     @api.model
@@ -526,8 +539,7 @@ class SupplierInfo(models.Model):
             # If we have the flag to export to all markets
             elif self.name.automatic_export_all_markets:
                 # We check if we have only one product on Amazon per odoo product and the backends are the same
-                if self.product_id.amazon_bind_ids and len(
-                        self.product_id.amazon_bind_ids) == 1 and self.name.backend_id.id == self.product_id.amazon_bind_ids.backend_id.id:
+                if self.product_id.amazon_bind_ids and len(self.product_id.amazon_bind_ids) == 1 and self.name.backend_id.id == self.product_id.amazon_bind_ids.backend_id.id:
                     markets_of_product = self.product_id.amazon_bind_ids.product_product_market_ids.mapped('marketplace_id').mapped('id')
                     marketplaces = marketplaces.filtered(lambda market:market.id not in markets_of_product)
                     vals['asin'] = self.product_id.amazon_bind_ids.asin
@@ -563,6 +575,7 @@ class ProductProduct(models.Model):
     def _compute_amazon_product_id(self):
         for p in self:
             p.amazon_bind_id = p.amazon_bind_ids[:1].id
+            p.product_tmpl_id.is_amazon_product=True
 
     def _get_supplier_product_qty(self):
         prod_qty = 0
@@ -622,7 +635,7 @@ class ProductProduct(models.Model):
             qty_total_product += qty_bom_produced if qty_bom_produced else 0
 
         if qty_total_product < 1:
-            qty_total_product = self._get_supplier_product_qty()
+            qty_total_product = self._get_supplier_product_qty() - qty_total_product
 
         return qty_total_product
 
@@ -754,8 +767,7 @@ class ProductProduct(models.Model):
             if not cost:
                 return None
 
-            return self._calc_amazon_price(backend=backend, margin=(amount_margin / cost) * 100, marketplace=marketplace, percentage_fee=percentage_fee,
-                                           ship_price=ship_price)
+            return self._calc_amazon_price(backend=backend, margin=(amount_margin / cost) * 100, marketplace=marketplace, percentage_fee=percentage_fee, ship_price=ship_price)
 
         return None
 
@@ -875,7 +887,6 @@ class ProductTemplate(models.Model):
 
     amazon_bind_id = fields.Many2one('amazon.product.product', 'Amazon product', related='product_variant_id.amazon_bind_id')
     product_product_market_ids = fields.One2many(comodel_name='amazon.product.product.detail', related='amazon_bind_id.product_product_market_ids')
-
 
 class AmazonProductUoM(models.Model):
     _name = 'amazon.product.uom'

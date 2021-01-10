@@ -465,7 +465,7 @@ class AmazonAPI(object):
 
                 self._backend.env['amazon.feed.tothrow'].create(vals)
 
-            amazon_product.backend_id = element['new_backend_id']
+            amazon_product.write({'backend_id': element['new_backend_id']})
 
         self.batch_update_feeds(migrate_feeds)
 

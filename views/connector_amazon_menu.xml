@@ -128,4 +128,16 @@
         action="action_amazon_throw_feed"
         groups="connector_amazon.group_connector_amazon_manager"/-->
 
+    <menuitem id="menu_amazon_reports"
+        parent="menu_amazon_root"
+        name="Reports"
+        sequence="60"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
+    <menuitem id="menu_amazon_duplicate_backend_products_report"
+        parent="menu_amazon_reports"
+        name="Duplicate backend products"
+        action="action_amazon_duplicate_backend_products"
+        groups="connector_amazon.group_connector_amazon_user"/>
+
 </odoo>

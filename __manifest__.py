@@ -161,6 +161,7 @@ To contribute to this module, please visit https://github.com/TristanMozos/
         'views/amazon_return_views.xml',
         'views/amazon_feed_views.xml',
         'views/amazon_feedbacks_views.xml',
+        'views/amazon_report_views.xml',
         'views/connector_amazon_menu.xml',
         'views/product_views.xml',
         'views/res_partner_views.xml',

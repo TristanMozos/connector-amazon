@@ -5,7 +5,7 @@ import logging
 import odoo
 
 from datetime import datetime, timedelta
-from odoo import models, api
+from odoo import models, api, fields, tools
 from odoo.addons.queue_job.job import job
 from odoo.addons.queue_job.job import FAILED, STARTED, ENQUEUED
 
@@ -77,9 +77,9 @@ class AmazonFixData(models.Model):
     @job(default_channel='root.amazon')
     @api.model
     def run_delayed_jobs(self, backend):
-        # delayable = self.with_delay(priority=7, eta=datetime.now())
-        # delayable.description = '%s.%s' % (self._name, 'clean_duplicate_jobs()')
-        # delayable.clean_duplicate_jobs()
+        delayable = self.with_delay(priority=7, eta=datetime.now())
+        delayable.description = '%s.%s' % (self._name, 'clean_duplicate_amazon_products()')
+        delayable.clean_duplicate_amazon_products()
 
         delayable2 = self.with_delay(priority=7, eta=datetime.now())
         delayable2.description = '%s.%s' % (self._name, 'throw_concurrent_jobs()')
@@ -395,34 +395,45 @@ class AmazonFixData(models.Model):
             Clean duplicate jobs
             :return:
         """
-        amz_prod_env = self.env['amazon.product.product']
-        amz_prod_env._cr.execute(""" SELECT 
-                                            id, asin 
-                                      FROM 
-                                            amazon_product_product 
-                                      WHERE 
-                                            asin in (SELECT 
-                                                        asin 
-                                                     FROM amazon_product_product 
-                                                     GROUP BY 
-                                                        asin 
-                                                     HAVING count(asin)>1) 
-                                      ORDER BY asin, create_date
-                                                        """)
+        duplicate_products = self.env['amazon.duplicate.product.backend.report'].search([])
+        for duplicate in duplicate_products:
+            if not duplicate.amazon_product_id.product_product_market_ids:
+                duplicate.amazon_product_id.unlink()
 
-        amz_product_ids = amz_prod_env._cr.dictfetchall()
-        asin = ''
-        list_ids = []
-        i = 0
-        for prod in amz_product_ids:
-            if asin == prod['asin']:
-                # TODO create feed to delete product
 
-                list_ids.append(prod['id'])
-                i += 1
+class AmazonDuplicateProductBackendReport(models.Model):
+    _name = "amazon.duplicate.product.backend.report"
+    _description = "Amazon duplicate product on several backend"
+    _auto = False
 
-            asin = prod['asin']
+    amazon_product_id = fields.Many2one('amazon.product.product')
+    sku = fields.Char('Sku')
+    asin = fields.Char('ASIN')
+    backend_id = fields.Many2one('amazon.backend')
+    amazon_qty = fields.Char('amazon_qty')
 
-        self.batch_unlink(amz_prod_env.browse(list_ids))
-
-        return
+    @api.model_cr
+    def init(self):
+        tools.drop_view_if_exists(self._cr, 'amazon_duplicate_product_backend_report')
+        self._cr.execute("""
+            create or replace view amazon_duplicate_product_backend_report as (
+                select 
+                    id,
+                    id as amazon_product_id,
+                    sku, 
+                    asin,
+                    backend_id,
+                    amazon_qty
+                from 
+                    amazon_product_product 
+                where sku in
+                    (select 
+                        sku 
+                     from 
+                        amazon_product_product 
+                     group by 
+                        sku 
+                     having count(sku)>1) 
+                order by 
+                    sku
+            )""")

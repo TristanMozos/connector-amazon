@@ -72,4 +72,36 @@
         <field name="value" eval="'ir.actions.server,%d'%action_supplier_products_to_migrate_backend_wizard"/>
     </record>
 
+    <record id="action_LoM_products_to_migrate_backend_wizard" model="ir.actions.server">
+        <field name="name">Migrate products to Amazon backend</field>
+        <field name="model_id" ref="mrp.model_mrp_bom"/>
+        <field name="state">code</field>
+        <field name="condition">True</field>
+        <field name="code">action = env.get('amazon.migrate.backend.products.wizard').migrate_products_from_lom_to_backend()</field>
+    </record>
+
+    <record id="dditem_lom_migrate_backend_amazon_products" model="ir.values">
+        <field name="name">name</field>
+        <field name="model">mrp.bom</field>
+        <field name="key" >action</field>
+        <field name="key2">client_action_multi</field>
+        <field name="value" eval="'ir.actions.server,%d'%action_LoM_products_to_migrate_backend_wizard"/>
+    </record>
+
+    <record id="action_migrate_amazon_backend_from_product_template" model="ir.actions.server">
+        <field name="name">Migrate to Amazon backend</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="state">code</field>
+        <field name="condition">True</field>
+        <field name="code">action = env.get('amazon.migrate.backend.products.wizard').get_template_products_to_migrate_backend()</field>
+    </record>
+
+    <record id="dditem_migrate_amazon_backend_product_template" model="ir.values">
+        <field name="name">migrate_backend_product_template</field>
+        <field name="model">product.template</field>
+        <field name="key" >action</field>
+        <field name="key2">client_action_multi</field>
+        <field name="value" eval="'ir.actions.server,%d'%action_migrate_amazon_backend_from_product_template"/>
+    </record>
+
 </odoo>

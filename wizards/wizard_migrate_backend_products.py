@@ -56,15 +56,17 @@ class WizardMigrateBackendProducts(models.TransientModel):
         return {'type': 'ir.actions.client', 'tag': 'history_back'}
 
     @api.multi
-    def get_amazon_products_to_migrate(self):
+    def get_amazon_products_to_migrate(self, product_list=None):
         """
         Method to get amazon products for migrate
         :return:
         """
+        if not product_list:
+            product_list = self._context.get('active_ids', [])
         if self._context.get('active_ids', []):
             backend_id = self.env['amazon.backend'].search([], limit=1)
             wizard = self.create({'backend_id': backend_id.id})
-            for id_prod in self._context.get('active_ids', []):
+            for id_prod in product_list:
                 wizard.write({'product_ids':[(4, id_prod)]})
 
 
@@ -83,25 +85,53 @@ class WizardMigrateBackendProducts(models.TransientModel):
         raise UserError(_('There aren\'t products to migrate.'))
 
     @api.multi
-    def get_products_to_migrate(self, product, product_computed=[]):
+    def get_template_products_to_migrate_backend(self):
+        if not self._context.get('active_ids', []):
+            return
+
+        product_computed = []
+        for id in self._context.get('active_ids', []):
+            self.get_amazon_products_from_template_product(product_id=id, product_computed=product_computed)
+
+        if product_computed:
+            return self.get_amazon_products_to_migrate(product_list=product_computed)
+
+    @api.multi
+    def get_amazon_products_from_template_product(self, product_id, product_computed=[]):
         """
         Get all products depends of product
         :param product:
         :param product_computed:
         :return:
         """
+        wizard = None
+        if not product_id:
+            return
+
+        product = self.env['product.template'].browse(product_id)
         if product.type == 'product' and product.id not in product_computed:
-            product_computed.append(product.id)
-            # First, we are going up on the LoM relationship
-            if product.bom_ids:
-                for bom in product.bom_ids:
-                    for line_bom in bom.bom_line_ids:
-                        self.get_products_to_migrate(line_bom.product_id, product_computed=product_computed)
-            # Second, we are going to search if any product have this product on LoM
+            if product.product_variant_id.amazon_bind_ids:
+                for amazon_product in product.product_variant_id.amazon_bind_ids:
+                    product_computed.append(amazon_product.id)
+            # We are going to search if any product have this product on LoM
             bom_childs = self.env['mrp.bom.line'].search([('product_id', '=', product.id)])
             for line_bom in bom_childs:
-                self.get_products_to_migrate(line_bom.bom_id.product_tmpl_id.product_variant_id,
-                                                     product_computed=product_computed)
+                self.get_amazon_products_from_template_product(line_bom.bom_id.product_tmpl_id.id, product_computed=product_computed)
+
+    @api.multi
+    def migrate_products_from_lom_to_backend(self):
+        if not self._context.get('active_ids', []):
+            return
+
+        product_list = []
+        for id in self._context.get('active_ids', []):
+            mrp = self.env['mrp.bom'].browse(id)
+            if mrp.product_tmpl_id and mrp.product_tmpl_id.product_variant_id.amazon_bind_ids:
+                for amazon_product in mrp.product_tmpl_id.product_variant_id.amazon_bind_ids:
+                    product_list.append(amazon_product.id)
+
+        if product_list:
+            return self.get_amazon_products_to_migrate(product_list=product_list)
 
     @api.multi
     def get_products_from_supplier_to_migrate(self):
@@ -118,13 +148,10 @@ class WizardMigrateBackendProducts(models.TransientModel):
                 wizard = self.create({'backend_id': backend_id.id})
                 for sup_prod in sup_products:
                     product_ids = []
-                    self.get_products_to_migrate(product=sup_prod.product_id, product_computed=product_ids)
-                    for prod_id in product_ids:
-                        prod = self.env['product.product'].browse(prod_id)
-                        if prod and prod.amazon_bind_ids:
-                            for amazon_prod in prod.amazon_bind_ids:
-                                there_are_products = True
-                                wizard.write({'product_ids': [(4, amazon_prod.id)]})
+                    self.get_amazon_products_from_template_product(product_id=sup_prod.product_tmpl_id.id, product_computed=product_ids)
+                    for amazon_prod_id in product_ids:
+                        there_are_products = True
+                        wizard.write({'product_ids': [(4, amazon_prod_id)]})
 
                 if there_are_products:
                     return {

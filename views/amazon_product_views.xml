@@ -10,9 +10,13 @@
                 <field name="sku"/>
                 <field name="asin"/>
                 <field name="odoo_id" string="Odoo product"/>
+                <separator/>
+                <!--filter string="Duplicate in several backends" name="filter_amazon_duplicate_backend_products" domain="[('is_backend_duplicated', '=', True)]"/-->
             </search>
+
         </field>
     </record>
+
 
     <record id="view_amazon_product_tree" model="ir.ui.view">
         <field name="name">amazon.product.product.tree</field>

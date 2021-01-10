@@ -195,27 +195,3 @@ class AmazonBindingPurchaseOrderListener(Component):
     def on_record_write(self, record, fields=None):
         if 'state' in fields and record.state in ('purchase', 'cancel'):
             self._recompute_stocks_purchase(record)
-
-
-class AmazonBindingProductProductListener(Component):
-    _name = 'amazon.binding.product.product.listener'
-    _inherit = 'base.connector.listener'
-    _apply_on = ['product.product']
-
-    def on_record_write(self, record, fields=None):
-        if 'barcode' in fields:
-            if record.amazon_bind_ids:
-                for amazon_bind in record.amazon_bind_ids:
-                    data = {'marketplace_ids': amazon_bind.product_data_market_ids.mapped('marketplace_id').mapped('id'),
-                            'amazon_product_id': amazon_bind.id,
-                            }
-
-                    vals = {'backend_id': amazon_bind.backend_id.id,
-                            'type': 'Delete inventory products',
-                            'model': self._name,
-                            'identificator': self.id,
-                            'data': data,
-                            }
-                    self.env['amazon.feed.tothrow'].create(vals)
-
-                record.amazon_bind_ids.unlink()
