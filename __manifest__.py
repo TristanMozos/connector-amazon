@@ -140,8 +140,7 @@ To contribute to this module, please visit https://github.com/TristanMozos/
                'delivery',
                'product_brand',
                'product_dimension',
-               'partner_address_street3',
-               'connector_ecommerce'],
+               'partner_address_street3', ],
 
     # always loaded
     'data':[

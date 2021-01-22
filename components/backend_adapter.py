@@ -4,7 +4,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # This project is based on connector-magneto, developed by Camptocamp SA
 
-import StringIO
+from io import StringIO
 import ast
 import logging
 import re
@@ -145,11 +145,11 @@ class AmazonAPI(object):
                 result = sqs_env.search_count([('id_message', '=', message['MessageId'])])
                 if not result:
                     # If the message is new
-                    vals = {'id_message': message['MessageId'],
-                            'recept_handle': message['ReceiptHandle'],
-                            'body': message['Body'],
-                            'sqs_account_id': self._backend.sqs_account_id.id,
-                            'sqs_deleted': remove_messages}
+                    vals = {'id_message':message['MessageId'],
+                            'recept_handle':message['ReceiptHandle'],
+                            'body':message['Body'],
+                            'sqs_account_id':self._backend.sqs_account_id.id,
+                            'sqs_deleted':remove_messages}
                     # Insert message in our ddbb and append to list of messages to return
                     ddbb_messages.append(sqs_env.create(vals))
 
@@ -178,7 +178,7 @@ class AmazonAPI(object):
                 if not result:
                     # If the message is new
                     delayable = sqs_env.with_delay(priority=6, eta=datetime.now())
-                    filters = {'method': 'process_price_message', 'xml': message['Body']}
+                    filters = {'method':'process_price_message', 'xml':message['Body']}
                     delayable.description = '%s.%s' % (self._name, 'process_price_message()')
                     delayable.process_price_message(filters)
 
@@ -1623,12 +1623,12 @@ class AmazonAPI(object):
         wdb.set_trace()
         for line in reader:
             if not feedbacks.get(line['order-id']):
-                feedbacks[line['order-id']]={'feedback_date':self._get_odoo_date_format(line['date']),
-                                                      'qualification':line['qualification'],
-                                                      'message':line['comments'],
-                                                      'respond':line['respond'],
-                                                      'amazon_sale_id': line['order-id'],
-                                                      'email':line['customer-email']}
+                feedbacks[line['order-id']] = {'feedback_date':self._get_odoo_date_format(line['date']),
+                                               'qualification':line['qualification'],
+                                               'message':line['comments'],
+                                               'respond':line['respond'],
+                                               'amazon_sale_id':line['order-id'],
+                                               'email':line['customer-email']}
         return feedbacks
 
     def _get_header_sales_fieldnames(self):
