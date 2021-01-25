@@ -30,7 +30,6 @@ class AmazonReportAdapter(Component):
     _inherit = 'amazon.adapter'
     _apply_on = 'amazon.report'
 
-    @api.multi
     def submit_report(self, report_name, filters):
         return self._call(method=report_name, arguments=filters)
 

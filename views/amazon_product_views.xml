@@ -64,7 +64,6 @@
     <record id="action_amazon_product" model="ir.actions.act_window">
         <field name="name">Amazon Products</field>
         <field name="res_model">amazon.product.product</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_product_tree"/>
     </record>
@@ -125,7 +124,6 @@
     <record id="action_amazon_product_marketplace" model="ir.actions.act_window">
         <field name="name">Amazon product marketplace data</field>
         <field name="res_model">amazon.product.product.detail</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_product_marketplace_tree"/>
     </record>

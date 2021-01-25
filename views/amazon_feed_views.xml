@@ -41,7 +41,6 @@
     <record id="action_amazon_feed" model="ir.actions.act_window">
         <field name="name">Amazon Feeds</field>
         <field name="res_model">amazon.feed</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_feed_tree"/>
     </record>
@@ -89,7 +88,6 @@
     <record id="action_amazon_throw_feed" model="ir.actions.act_window">
         <field name="name">Amazon Feeds To Throw</field>
         <field name="res_model">amazon.feed.tothrow</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_feed_tothrow_tree"/>
     </record>

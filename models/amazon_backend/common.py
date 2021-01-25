@@ -134,20 +134,20 @@ class AmazonBackend(models.Model):
 
     def get_templates_from_products(self):
         self._cr.execute(""" SELECT DISTINCT
-                                apd.marketplace_id, 
+                                apd.marketplace_id,
                                 apd.merchant_shipping_group
                             FROM
-                                amazon_product_product_detail apd                                     
+                                amazon_product_product_detail apd
                             WHERE
-                                product_id IN 
-                                    (SELECT 
+                                product_id IN
+                                    (SELECT
                                         id
                                      FROM
                                         amazon_product_product
                                      WHERE
                                         backend_id=%s)
                                 AND
-                                apd.marketplace_id || ' -|- ' || apd.merchant_shipping_group NOT IN 
+                                apd.marketplace_id || ' -|- ' || apd.merchant_shipping_group NOT IN
                                 (SELECT ast.marketplace_id || ' -|- ' || ast.name FROM amazon_shipping_template ast WHERE backend_id=%s)
                             """, (self.id, self.id))
 
@@ -166,7 +166,6 @@ class AmazonBackend(models.Model):
                 mp.append(mp_rs.id_mws)
             return mp
 
-    @api.multi
     def _get_marketplace_default(self):
         self.ensure_one()
         for market in self.marketplace_ids:
@@ -174,7 +173,6 @@ class AmazonBackend(models.Model):
                 return market
         return
 
-    @api.multi
     def add_checkpoint(self, record):
         self.ensure_one()
         record.ensure_one()
@@ -182,7 +180,6 @@ class AmazonBackend(models.Model):
                                          self._name, self.id)
 
     @contextmanager
-    @api.multi
     def work_on(self, model_name, **kwargs):
         self.ensure_one()
         # We create a Amazon Client API here, so we can create the
@@ -196,7 +193,6 @@ class AmazonBackend(models.Model):
                     model_name, amazon_api=amazon_api, **kwargs) as work:
                 yield work
 
-    @api.multi
     def _import_product_product(self):
         for backend in self:
             try:
@@ -230,7 +226,6 @@ class AmazonBackend(models.Model):
         # We are putting 5 minutes to launch the delayable job
         return True
 
-    @api.multi
     def _export_product_product(self):
         sup_products = self.env['product.supplierinfo'].search([('name.supplier', '=', True),
                                                                 '|',
@@ -244,20 +239,13 @@ class AmazonBackend(models.Model):
             product_id = sup_product.product_id.id
 
 
-    @api.multi
     def _import_sale_orders(self,
                             import_start_time=None,
                             import_end_time=None,
                             generate_report=False,
                             update_import_date=True):
 
-        import wdb
-        wdb.set_trace()
         for backend in self:
-            user = backend.warehouse_id.company_id.user_tech_id
-            if not user:
-                user = self.env['res.users'].browse(self.env.uid)
-
             if not backend.import_updated_sales_from_date:
                 backend.import_updated_sales_from_date = backend.import_sales_from_date
 
@@ -286,9 +274,7 @@ class AmazonBackend(models.Model):
                     delayable.description = 'Generate sales report to: %s' % backend.name
                     delayable.import_batch(backend, filters=filters)
             else:
-                sale_binding_model = self.env['amazon.sale.order']
-                if user != self.env.user:
-                    sale_binding_model = sale_binding_model.sudo(user)
+                sale_binding_model = self.env['amazon.sale.order'].sudo(True)
                 filters = {'date_start':import_start_time.isoformat(), 'date_end':import_end_time.isoformat()}
                 sale_binding_model.import_batch(backend, filters=filters)
 
@@ -297,19 +283,13 @@ class AmazonBackend(models.Model):
 
         return True
 
-    @api.multi
     def _import_updated_sales(self,
                               import_start_time=None,
                               import_end_time=None,
                               update_import_date=True):
 
         for backend in self:
-            user = backend.warehouse_id.company_id.user_tech_id
-            if not user:
-                user = self.env['res.users'].browse(self.env.uid)
-            sale_binding_model = self.env['amazon.sale.order']
-            if user != self.env.user:
-                sale_binding_model = sale_binding_model.sudo(user)
+            sale_binding_model = self.env['amazon.sale.order'].sudo(True)
 
             if not import_end_time:
                 # We minus two minutes to now time
@@ -326,16 +306,11 @@ class AmazonBackend(models.Model):
             if update_import_date:
                 backend.write({'import_updated_sales_from_date':import_end_time})
 
-    @api.multi
     def _import_customer_feedback_orders(self,
                             import_start_time=None,
                             import_end_time=None):
 
         for backend in self:
-            user = backend.warehouse_id.company_id.user_tech_id
-            if not user:
-                user = self.env['res.users'].browse(self.env.uid)
-
             if not import_end_time:
                 import_end_time = datetime.strptime(datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
                                                     '%Y-%m-%d %H:%M:%S') - timedelta(minutes=2)
@@ -367,73 +342,20 @@ class AmazonBackend(models.Model):
     @api.model
     def _update_product_stock_qty_prices(self):
         for backend in self:
-            user = backend.warehouse_id.company_id.user_tech_id
-            if not user:
-                user = self.env['res.users'].browse(self.env.uid)
-            product_binding_model = self.env['amazon.product.product']
-            if user != self.env.user:
-                product_binding_model = product_binding_model.sudo(user)
+            product_binding_model = self.env['amazon.product.product'].sudo(True)
             # We are going to export the stock and prices changes
             product_binding_model.export_batch(backend)
 
-    @api.multi
     def _fix_amazon_data(self):
         for backend in self:
-            user = backend.warehouse_id.company_id.user_tech_id
-            if not user:
-                user = self.env['res.users'].browse(self.env.uid)
-            fix_data_model = self.env['amazon.fix.data']
-            if user != self.env.user:
-                fix_data_model = fix_data_model.sudo(user)
+            fix_data_model = self.env['amazon.fix.data'].sudo(True)
             # We are going to import the initial prices, fees and prices changes
             fix_data_model.run_delayed_jobs(backend)
             break
 
         return True
 
-    @api.multi
-    def _get_price_changes(self):
-        for backend in self:
-            user = backend.warehouse_id.company_id.user_tech_id
-            if not user:
-                user = self.env['res.users'].browse(self.env.uid)
-            message_binding_model = self.env['amazon.config.sqs.message']
-            if user != self.env.user:
-                message_binding_model = message_binding_model.sudo(user)
-            # We are going to get messages with price changes
-            message_binding_model.get_sqs_messages(backend)
 
-    def _get_initial_prices_and_fees(self):
-        backends = self.env['amazon.backend'].search([])
-        product_importer = self.env['amazon.product.product']
-        for backend in backends:
-            product_importer.get_products_initial_prices_and_fees(backend=backend)
-
-    def _throw_delayed_jobs_for_price_changes(self):
-        backends = self.env['amazon.backend'].search([('sqs_account_id', '!=', False)])
-        for backend in backends:
-
-            number_messages = self.env['amazon.product.product.detail'].search_count([('product_id.backend_id', '=', backend.id)])
-            if number_messages > AMAZON_NUMBER_MESSAGES_CHANGE_PRICE_RECOVER:
-                number_messages = AMAZON_NUMBER_MESSAGES_CHANGE_PRICE_RECOVER
-            messages = self.env['amazon.config.sqs.message'].search([('sqs_account_id.backend_id', '=', backend.id),
-                                                                     ('processed', '=', False)],
-                                                                    order='create_date asc',
-                                                                    limit=number_messages)
-            # limit=10)
-            message_binding_model = self.env['amazon.config.sqs.message']
-
-            # TODO test it
-            i = 0
-            for message in messages:
-                print 'Message number:' + str(i) + ' message:' + str(message.id) + ' date: ' + datetime.now().isoformat()
-                i += 1
-                delayable = message_binding_model.with_delay(priority=7, eta=datetime.now())
-                filters = {'message':message.id}
-                delayable.description = '%s.%s' % (self._name, 'process_price_message()')
-                delayable.process_price_message(filters)
-
-    @api.multi
     def _throw_feeds(self):
         for backend in self:
             _logger.info('connector_amazon [%s][%s] log: Throw feeds init with %s backend' % (os.getpid(), inspect.stack()[0][3], backend.name))
@@ -479,33 +401,6 @@ class AmazonBackend(models.Model):
         self._amazon_backend('_fix_amazon_data', domain=domain)
 
     @api.model
-    def _scheduler_get_price_changes(self, domain=None):
-        """
-        Get messages while 60 seconds from sqs and save in our database
-        :param domain:
-        :return:
-        """
-        self._amazon_backend('_get_price_changes', domain=domain)
-
-    @api.model
-    def _scheduler_throw_jobs_for_price_changes(self, domain=None):
-        """
-        Get messages from our database to process these
-        We are going to create a delayed job to process every message in a alone transaction
-        :param domain:
-        :return:
-        """
-        self._amazon_backend('_throw_delayed_jobs_for_price_changes', domain=domain)
-
-    @api.model
     def _scheduler_throw_feeds(self, domain=None):
         self._amazon_backend('_throw_feeds', domain=domain)
 
-    @api.model
-    def _scheduler_get_initial_prices_and_fees(self, domain=None):
-        """
-        Get messages of change prices from our database and throw the jobs to process the messages
-        :param domain:
-        :return:
-        """
-        self._amazon_backend('_get_initial_prices_and_fees', domain=domain)

@@ -28,7 +28,6 @@ class AmazonFixData(models.Model):
     _inherit = 'amazon.binding'
     _description = 'Amazon Fix Data'
 
-    @api.multi
     def batch_unlink(self, records):
         if records:
             with api.Environment.manage():
@@ -51,7 +50,6 @@ class AmazonFixData(models.Model):
                         _logger.exception(
                             "Connector amazon fix data failed to delete Ms : %s" % (records._name, str(e)))
 
-    @api.multi
     def batch_requeue(self, records):
         if records:
             with api.Environment.manage():
@@ -129,17 +127,17 @@ class AmazonFixData(models.Model):
         :return:
         """
         sqs_message_env = self.env['amazon.config.sqs.message']
-        sqs_message_env._cr.execute(""" SELECT 
+        sqs_message_env._cr.execute(""" SELECT
                                             id, id_message
-                                        FROM 
+                                        FROM
                                             amazon_config_sqs_message
                                         WHERE
                                             id_message in
-                                                (SELECT 
+                                                (SELECT
                                                     id_message
-                                                FROM 
+                                                FROM
                                                     amazon_config_sqs_message
-                                                WHERE 
+                                                WHERE
                                                     processed=False
                                                 GROUP BY id_message
                                                 HAVING COUNT(id_message)>1)
@@ -235,11 +233,11 @@ class AmazonFixData(models.Model):
         amazon_historic_offer_env = self.env['amazon.historic.product.offer']
 
         # Delete offer of the old structure
-        sql = """SELECT 
-                     id 
-                 FROM 
-                     amazon_product_offer 
-                 WHERE 
+        sql = """SELECT
+                     id
+                 FROM
+                     amazon_product_offer
+                 WHERE
                      product_detail_id is not null"""
 
         amazon_historic_offer_env._cr.execute(sql)
@@ -257,15 +255,15 @@ class AmazonFixData(models.Model):
         amazon_historic_offer_env._cr.execute(""" SELECT
                                             id
                                         FROM
-                                            amazon_historic_product_offer 
-                                        WHERE product_detail_id IN 
-                                            (SELECT 
-                                                product_detail_id 
-                                             FROM 
-                                                amazon_historic_product_offer 
-                                             GROUP BY 
+                                            amazon_historic_product_offer
+                                        WHERE product_detail_id IN
+                                            (SELECT
+                                                product_detail_id
+                                             FROM
+                                                amazon_historic_product_offer
+                                             GROUP BY
                                                 product_detail_id HAVING count(product_detail_id)>%s limit %s)
-                                        ORDER BY 
+                                        ORDER BY
                                             product_detail_id, offer_date DESC
                                                 """ % (str(AMAZON_SAVE_OLD_HISTORIC_OFFERS), str(AMAZON_HISTORIC_OFFERS_DELETE_PER_TIME)))
 
@@ -314,17 +312,17 @@ class AmazonFixData(models.Model):
                 :return:
                 """
         queue_job_env = self.env['queue.job']
-        queue_job_env._cr.execute(""" SELECT 
+        queue_job_env._cr.execute(""" SELECT
                                                     id, func_string
-                                                FROM 
+                                                FROM
                                                     queue_job
                                                 WHERE
                                                     func_string in
-                                                        (SELECT 
+                                                        (SELECT
                                                             func_string
-                                                        FROM 
+                                                        FROM
                                                             queue_job
-                                                        WHERE 
+                                                        WHERE
                                                             channel = 'root.amazon'
                                                             and state in ('pending', 'started', 'enqueued')
                                                         GROUP BY func_string
@@ -396,17 +394,17 @@ class AmazonFixData(models.Model):
             :return:
         """
         amz_prod_env = self.env['amazon.product.product']
-        amz_prod_env._cr.execute(""" SELECT 
-                                            id, asin 
-                                      FROM 
-                                            amazon_product_product 
-                                      WHERE 
-                                            asin in (SELECT 
-                                                        asin 
-                                                     FROM amazon_product_product 
-                                                     GROUP BY 
-                                                        asin 
-                                                     HAVING count(asin)>1) 
+        amz_prod_env._cr.execute(""" SELECT
+                                            id, asin
+                                      FROM
+                                            amazon_product_product
+                                      WHERE
+                                            asin in (SELECT
+                                                        asin
+                                                     FROM amazon_product_product
+                                                     GROUP BY
+                                                        asin
+                                                     HAVING count(asin)>1)
                                       ORDER BY asin, create_date
                                                         """)
 

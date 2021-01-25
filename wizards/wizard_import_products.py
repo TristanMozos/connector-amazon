@@ -9,7 +9,6 @@ class WizardImportOrders(models.TransientModel):
     _name = "amazon.products.import.wizard"
     _description = "Amazon Import Products Wizard"
 
-    @api.multi
     def import_inventory(self):
         backend_id = self._context.get('active_ids', [])
         try:
@@ -17,5 +16,5 @@ class WizardImportOrders(models.TransientModel):
                 backend = self.env['amazon.backend'].browse(backend_id)
                 backend._import_product_product()
 
-        except Exception, e:
+        except Exception as e:
             raise e

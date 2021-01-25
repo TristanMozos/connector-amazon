@@ -11,7 +11,6 @@ class WizardDeleteAmazonProduct(models.TransientModel):
     _name = "amazon.delete.product.wizard"
     _description = "Delete Amazon Product Wizard"
 
-    @api.multi
     def name_get(self):
         result = []
         for wizard in self:
@@ -19,7 +18,6 @@ class WizardDeleteAmazonProduct(models.TransientModel):
             result.append((wizard.id, name))
         return result
 
-    @api.multi
     def delete_amazon_product(self):
         if self._context.get('active_ids', []):
             if self:

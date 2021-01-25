@@ -41,7 +41,6 @@
     <record id="action_amazon_marketplace" model="ir.actions.act_window">
         <field name="name">Amazon Marketplaces</field>
         <field name="res_model">amazon.config.marketplace</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_marketplace_tree"/>
     </record>
@@ -80,7 +79,6 @@
     <record id="action_amazon_mws_control_quota" model="ir.actions.act_window">
         <field name="name">MWS control quota</field>
         <field name="res_model">amazon.control.request</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_mws_control_quota_tree"/>
     </record>
@@ -118,7 +116,6 @@
     <record id="action_amazon_sqs_account" model="ir.actions.act_window">
         <field name="name">SQS Account</field>
         <field name="res_model">amazon.config.sqs.account</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_sqs_account_tree"/>
     </record>
@@ -137,7 +134,6 @@
     <record id="action_amazon_brand_ban" model="ir.actions.act_window">
         <field name="name">Product Brand Ban</field>
         <field name="res_model">amazon.brand.ban</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_product_brand_ban_tree"/>
     </record>

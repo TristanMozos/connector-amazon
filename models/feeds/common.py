@@ -130,10 +130,8 @@ class AmazonFeedAdapter(Component):
     _inherit = 'amazon.adapter'
     _apply_on = 'amazon.feed'
 
-    @api.multi
     def submit_feed(self, feed_name, arguments):
         return self._call(method=feed_name, arguments=arguments)
 
-    @api.multi
     def get_feed(self, feed_name, arguments):
         return self._call(method=feed_name, arguments=arguments)

@@ -24,7 +24,6 @@ class WizardImportOrders(models.TransientModel):
         elif generate_report != 'report' and diference_bet_dates.days > 15:
             raise exceptions.except_orm('Error', 'The diference between two dates must be lower than 15 days (%s)' % diference_bet_dates)
 
-    @api.multi
     def import_orders(self):
         backend_id = self._context.get('active_ids', [])
         try:
@@ -38,10 +37,9 @@ class WizardImportOrders(models.TransientModel):
                                             generate_report=self.generate_report == 'report',
                                             update_import_date=False)
 
-        except Exception, e:
+        except Exception as e:
             raise e
 
-    @api.multi
     def update_orders(self):
         backend_id = self._context.get('active_ids', [])
         try:
@@ -74,7 +72,6 @@ class WizardImportOrder(models.TransientModel):
         if not re.match(AMAZON_ORDER_ID_PATTERN, id_order):
             raise exceptions.except_orm('Error', 'The order id validation failed %s %s' % (AMAZON_ORDER_ID_PATTERN, id_order))
 
-    @api.multi
     def import_order(self):
         backend_id = self._context.get('active_ids', [])
         return self.import_order_from_backend(backend=backend_id)

@@ -31,7 +31,6 @@ class WizardSetChangePricesMargins(models.TransientModel):
         return res
 
 
-    @api.multi
     def get_products_to_change(self, product, product_computed=[]):
         if product.id not in product_computed:
             product_computed.append(product.id)
@@ -46,7 +45,6 @@ class WizardSetChangePricesMargins(models.TransientModel):
                 self.get_products_to_change(line_bom.bom_id.product_tmpl_id.product_variant_id, product_computed=product_computed)
 
 
-    @api.multi
     def compute_change_margins(self, product):
         # TODO test it
         product_computed=[]
@@ -73,7 +71,6 @@ class WizardSetChangePricesMargins(models.TransientModel):
                                   'min_price_margin_value': self.min_price_margin_value})
 
 
-    @api.multi
     def change_price_margins(self):
         suppliers = self.env['res.partner'].browse(self._default_suppliers())
         product_computed = []

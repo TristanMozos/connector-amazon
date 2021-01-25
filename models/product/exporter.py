@@ -41,7 +41,6 @@ class ProductStockPriceExporter(Component):
     _usage = 'amazon.product.stock.price.export'
     _apply_on = 'amazon.product.product'
 
-    @api.multi
     def get_products_to_recompute_prices(self, product, product_computed=[]):
         if product.type == 'product' and product.id not in product_computed:
             product_computed.append(product.id)
@@ -57,7 +56,6 @@ class ProductStockPriceExporter(Component):
                 for line_bom in bom_childs:
                     self.get_products_to_recompute_prices(line_bom.bom_id.product_tmpl_id.product_variant_id, product_computed=product_computed)
 
-    @api.multi
     def recompute_amazon_prices_product(self, first_product):
         """
         Recompute de price and stock on Amazon of product and all products on upper or lower relationship LoM
@@ -95,7 +93,6 @@ class ProductStockPriceExporter(Component):
                 # Change price
                 self.calc_price_to_export(id_detail=detail.id)
 
-    @api.multi
     def _get_offers_from_mws(self, detail):
         try:
             importer = self.work.component(usage='amazon.product.offers.import')
@@ -103,7 +100,6 @@ class ProductStockPriceExporter(Component):
         except Exception as e:
             return
 
-    @api.multi
     def up_price_with_buybox(self, detail):
         """
         The method is going to consider the next cases to up the prices:
@@ -214,7 +210,6 @@ class ProductStockPriceExporter(Component):
                     return True
         return False
 
-    @api.multi
     def change_price_to_get_buybox(self, detail):
         """
         Method to check if we have the buybox, if there aren't we are going to change the prices to get it

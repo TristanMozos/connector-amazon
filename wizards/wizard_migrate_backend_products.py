@@ -17,7 +17,6 @@ class WizardMigrateBackendProducts(models.TransientModel):
     marketplace_ids = fields.Many2many(comodel_name='amazon.config.marketplace', string='Markerplaces to migrate', compute='_onchange_marketplaces')
     product_ids = fields.Many2many(comodel_name='amazon.product.product', relation='migrate_products_backend_wizard_rel', string='Products')
 
-    @api.multi
     def name_get(self):
         result = []
         for wizard in self:
@@ -31,7 +30,6 @@ class WizardMigrateBackendProducts(models.TransientModel):
             if wizard.backend_id:
                 wizard.marketplace_ids = wizard.backend_id.marketplace_ids
 
-    @api.multi
     def migrate_products(self):
         """
         Method to create de feed to migrate the product from their backend to new backend
@@ -55,7 +53,6 @@ class WizardMigrateBackendProducts(models.TransientModel):
 
         return {'type': 'ir.actions.client', 'tag': 'history_back'}
 
-    @api.multi
     def get_amazon_products_to_migrate(self):
         """
         Method to get amazon products for migrate
@@ -82,7 +79,6 @@ class WizardMigrateBackendProducts(models.TransientModel):
 
         raise UserError(_('There aren\'t products to migrate.'))
 
-    @api.multi
     def get_products_to_migrate(self, product, product_computed=[]):
         """
         Get all products depends of product
@@ -103,7 +99,6 @@ class WizardMigrateBackendProducts(models.TransientModel):
                 self.get_products_to_migrate(line_bom.bom_id.product_tmpl_id.product_variant_id,
                                                      product_computed=product_computed)
 
-    @api.multi
     def get_products_from_supplier_to_migrate(self):
         """
 

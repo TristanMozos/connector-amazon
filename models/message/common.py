@@ -134,7 +134,6 @@ class SQSMessage(models.Model):
     processed = fields.Boolean(default=False)
     sqs_deleted = fields.Boolean(default=False)
 
-    @api.multi
     def _get_messages_price_changes(self, backend):
         """
         Method call to SQS service to get messages
@@ -173,7 +172,7 @@ class SQSMessage(models.Model):
             # TODO change prices
             for detail in res['product_details']:
                 detail._change_price()
-    
+
     @job(default_channel='root.amazon')
     @api.model
     def delete_old_historic_offer(self, filters):
@@ -194,7 +193,6 @@ class SQSMessage(models.Model):
                 delayable.description = '%s.%s' % (self._name, 'delete_old_historic_offer()')
                 delayable.delete_old_historic_offer(vals)
 
-    @api.multi
     def _process_message(self, message=None, xml_message=None):
         # We are going to delete the same messages
         messages = None

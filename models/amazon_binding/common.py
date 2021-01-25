@@ -76,7 +76,6 @@ class AmazonBinding(models.AbstractModel):
             raise exception
 
     @job(default_channel='root.amazon')
-    @api.multi
     def export_record(self, backend, internal_id):
         """ Export a record on Amazon """
         exception = None

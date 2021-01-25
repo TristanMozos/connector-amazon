@@ -106,7 +106,6 @@ class AmazonAPI(object):
                 return ''
         return ''
 
-    @api.multi
     def batch_update_feeds(self, feeds):
         if feeds:
             with api.Environment.manage():
@@ -129,7 +128,6 @@ class AmazonAPI(object):
                         _logger.exception(
                             "Failed to update feeds : %s" % (feeds._name, str(e)))
 
-    @api.multi
     def _save_sqs_messages(self, messages, remove_messages=True):
         """
         Method to get messages from sqs and save in our bbdd
@@ -161,7 +159,6 @@ class AmazonAPI(object):
                     )
         return ddbb_messages
 
-    @api.multi
     def _create_jobs_from_sqs_messages(self, messages, remove_messages=True):
         """
         Method to get messages from sqs create job
@@ -246,7 +243,6 @@ class AmazonAPI(object):
             return self._get_messages_of_sqs_account()
         return
 
-    @api.multi
     def _submit_feeds(self):
         """
         Method that get feeds of our database and submit the method of every type of feed
@@ -336,7 +332,6 @@ class AmazonAPI(object):
             return info_feed.getvalue('FeedSubmissionId')
         return
 
-    @api.multi
     def _submit_delete_inventory_request(self, arguments):
         """
         Method to delete product from Amazon inventory
@@ -364,7 +359,7 @@ class AmazonAPI(object):
                         {'D5-0BJZ-39B4': {'sku': 'D5-0BJZ-39B4'},
                          'CH-N74Z-DD0S': {'sku': 'CH-N74Z-DD0S'},
                          '9P-NBB6-095H': {'sku': '9P-NBB6-095H'}}}
-                         
+
                          {'amazon_product_id': 70144, 'new_backend_id': 6, 'marketplace_ids': [1, 2, 3, 4, 5, 9]}
         '''
         for feed_to_throw in arguments:
@@ -419,7 +414,6 @@ class AmazonAPI(object):
 
         return ids
 
-    @api.multi
     def _migrate_backend_feeds(self, migrate_feeds):
         """
 
@@ -564,9 +558,9 @@ class AmazonAPI(object):
         Dict structure
         dict_products = {
                          'A1RKKUPIHCS9HS': {
-                            'D5-0BJZ-39B4': 
+                            'D5-0BJZ-39B4':
                                     {'sku': 'D5-0BJZ-39B4', 'price': '84.80', currency:'EUR', 'id_mws':'A1RKKUPIHCS9HS'},
-                            'CH-N74Z-DD0S': 
+                            'CH-N74Z-DD0S':
                                     {'sku': 'CH-N74Z-DD0S', 'price': '24,45', currency:'EUR', 'id_mws':'A1RKKUPIHCS9HS'}
                             }
                         }
@@ -1454,7 +1448,6 @@ class AmazonAPI(object):
             return (response.response.encoding, reader)
         return
 
-    @api.multi
     def _save_feed_response(self, id_feed):
         """
         Method that get the result of feed and save this on database

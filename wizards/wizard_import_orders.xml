@@ -74,7 +74,6 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">amazon.orders.import.wizard</field>
         <field name="src_model">amazon.sale.order</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="wizard_update_orders_form"/>
         <field name="target">new</field>
@@ -87,7 +86,6 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">amazon.orders.import.wizard</field>
         <field name="src_model">amazon.sale.order</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="wizard_import_orders_form"/>
         <field name="target">new</field>
@@ -100,7 +98,6 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">amazon.order.import.wizard</field>
         <field name="src_model">amazon.sale.order</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="wizard_import_order_form"/>
         <field name="target">new</field>

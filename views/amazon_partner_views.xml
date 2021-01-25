@@ -26,7 +26,6 @@
     <record id="action_amazon_partner" model="ir.actions.act_window">
         <field name="name">Amazon Partners</field>
         <field name="res_model">amazon.res.partner</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_partner_tree"/>
     </record>

@@ -235,7 +235,6 @@ class AmazonProductProduct(models.Model):
         for detail in self.product_product_market_ids:
             detail._change_price(force_change=force_change)
 
-    @api.multi
     def get_market_detail_product(self, market):
         if market:
             market_id = None
@@ -350,7 +349,6 @@ class AmazonProductProductDetail(models.Model):
             # Update total price
             detail.total_price = detail.price + detail.price_ship
 
-    @api.multi
     def _compute_real_offer(self):
         for detail in self:
             detail.offer_ids = detail.get_current_offers()
@@ -433,7 +431,6 @@ class AmazonProductProductDetail(models.Model):
         margin_price = total_sell_price - amazon_fee - taxes_amount - cost - (ship_cost or 0)
         return (margin_price, margin_price / cost * 100)
 
-    @api.multi
     def _change_price(self, force_change=False):
         """
         Throw the job to change price when the detail, product, backend or one of the suppliers have the flag of change prices on 'yes'
@@ -509,13 +506,11 @@ class SupplierInfo(models.Model):
         self._event('on_record_write').notify(self, fields=vals)
         return record
 
-    @api.multi
     def unlink(self):
         record = super(SupplierInfo, self).unlink()
         self._event('on_record_unlink').notify(record, fields=None)
         return record
 
-    @api.multi
     def export_products_from_supplierinfo(self):
         try:
             marketplaces = self.name.backend_id.marketplace_ids
@@ -582,7 +577,6 @@ class ProductProduct(models.Model):
 
         return prod_qty
 
-    @api.multi
     def _compute_amazon_stock(self, products_amazon_stock_computed=[]):
         """
         Method to compute the stock on Amazon, we are going to get the virtual available to put on Amazon stock
@@ -802,7 +796,6 @@ class ProductProduct(models.Model):
 
         return None
 
-    @api.multi
     def get_products_to_recompute_stock(self, product, product_computed=[]):
         """
         Get all products depends of product
@@ -822,7 +815,6 @@ class ProductProduct(models.Model):
             for line_bom in bom_childs:
                 self.get_products_to_recompute_stock(line_bom.bom_id.product_tmpl_id.product_variant_id, product_computed=product_computed)
 
-    @api.multi
     def recompute_amazon_stocks_product(self):
         """
         Recompute de stock on Amazon of product and all products on upper or lower relationship LoM

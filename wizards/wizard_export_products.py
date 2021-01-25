@@ -61,7 +61,6 @@ class WizardListProductsToExport(models.TransientModel):
 
     margin_to_export = fields.Float('Margin to export', default=30, required=True)
 
-    @api.multi
     def name_get(self):
         result = []
         for wizard in self:
@@ -78,10 +77,9 @@ class WizardListProductsToExport(models.TransientModel):
         for wizard in self:
             if wizard.backend_id:
                 wizard.marketplace_ids = wizard.backend_id.marketplace_ids
-                # TODO filter 
+                # TODO filter
 
 
-    @api.multi
     def get_wizard_action(self):
         """
         Action that get selected products from the odoo page and filter these on two: can be exported and can't be exported

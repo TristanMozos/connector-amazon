@@ -45,7 +45,6 @@ class AmazonSubmitFeeds(Component):
 
 
 
-    @api.multi
     def submit_feeds(self):
         feed_binding_model = self.env['amazon.feed']
         feed_binding_model.export_batch(backend=self.backend_record, filters={'method': 'submit_feeds', 'arguments': []})

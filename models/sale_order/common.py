@@ -93,7 +93,6 @@ class AmazonSaleOrder(models.Model):
                              store=True,
                              readonly=True)
 
-    @api.multi
     def name_get(self):
         result = []
         for record in self:
@@ -101,7 +100,6 @@ class AmazonSaleOrder(models.Model):
         return result
 
     @job(default_channel='root.amazon')
-    @api.multi
     def export_state_change(self, allowed_states=None,
                             comment=None, notify=None):
         """ Change state of a sales order on Amazon """
@@ -188,7 +186,6 @@ class SaleOrder(models.Model):
             if amazon_order.amazon_parent_id:
                 self.parent_id = amazon_order.amazon_parent_id.odoo_id
 
-    @api.multi
     def write(self, vals):
         return super(SaleOrder, self).write(vals)
 
@@ -209,7 +206,6 @@ class SaleOrder(models.Model):
                 description=job_descr
             ).export_state_change()
 
-    @api.multi
     def copy(self, default=None):
         self_copy = self.with_context(__copy_from_quotation=True)
         new = super(SaleOrder, self_copy).copy(default=default)
@@ -308,7 +304,6 @@ class SaleOrderLine(models.Model):
                 bindings.write({'odoo_id':new_line.id})
         return new_line
 
-    @api.multi
     def copy_data(self, default=None):
         data = super(SaleOrderLine, self).copy_data(default=default)[0]
         if self.env.context.get('__copy_from_quotation'):
@@ -328,7 +323,6 @@ class SaleOrderAdapter(Component):
     _inherit = 'amazon.adapter'
     _apply_on = 'amazon.sale.order'
 
-    @api.multi
     def get_lines(self, filters):
         '''
         Method to call at MWS API and return the lines of the order
@@ -337,7 +331,6 @@ class SaleOrderAdapter(Component):
         '''
         return self._call(method='list_items_from_order', arguments=filters)
 
-    @api.multi
     def get_orders(self, arguments):
         try:
             assert arguments
