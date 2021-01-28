@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from decorator import contextmanager
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-from odoo.addons.connector.checkpoint import checkpoint
 
 from ...components.backend_adapter import AmazonAPI
 from odoo.addons.queue_job.job import STARTED, ENQUEUED, PENDING
@@ -172,12 +171,6 @@ class AmazonBackend(models.Model):
             if market.country_id.id == self.region.id:
                 return market
         return
-
-    def add_checkpoint(self, record):
-        self.ensure_one()
-        record.ensure_one()
-        return checkpoint.add_checkpoint(self.env, record._name, record.id,
-                                         self._name, self.id)
 
     @contextmanager
     def work_on(self, model_name, **kwargs):

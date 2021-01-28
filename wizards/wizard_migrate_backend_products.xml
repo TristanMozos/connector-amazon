@@ -31,7 +31,6 @@
         <field name="name">Wizard to migrate backend's products</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">amazon.product.product</field>
-        <field name="src_model">amazon.migrate.backend.products.wizard</field>
         <field name="view_mode">tree</field>
         <field name="view_id" ref="connector_amazon.view_amazon_product_form"/>
         <field name="target">current</field>

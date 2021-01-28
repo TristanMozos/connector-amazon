@@ -5,7 +5,7 @@
 import inspect
 import logging
 import os
-import urllib2
+import urllib.request
 import base64
 from datetime import datetime
 
@@ -185,11 +185,11 @@ class ProductImporter(Component):
             self.amazon_record['odoo_id'] = products[0].id
 
     def _get_binary_image(self, image_url):
+        # TODO test this
         url = image_url.encode('utf8')
         try:
-            request = urllib2.Request(url)
-            binary = urllib2.urlopen(request)
-        except urllib2.HTTPError as err:
+            response = urllib.request.urlopen(url)
+        except urllib.request.HTTPError as err:
             if err.code == 404:
                 # the image is just missing, we skip it
                 return
@@ -199,7 +199,7 @@ class ProductImporter(Component):
                 # and we have to check why it couldn't be accessed
                 raise
         else:
-            return binary.read()
+            return response.read()
 
     def _write_brand(self, binding, product_data):
         if binding.product_tmpl_id.product_brand_id and product_data.get('brand') and \

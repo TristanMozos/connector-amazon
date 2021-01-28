@@ -16,11 +16,10 @@ import boto3
 import dateutil.parser
 import unicodecsv
 from lxml import etree
-from odoo import api
+from odoo import api, registry
 from odoo.addons.component.core import AbstractComponent
 from odoo.addons.queue_job.exception import FailedJobError, RetryableJobError
 from odoo.fields import Datetime, Date
-from odoo.modules.registry import RegistryManager
 
 # from ..models.config.common import MAX_NUMBER_SQS_MESSAGES_TO_RECEIVE
 from ..mws.mws import MWSError
@@ -220,7 +219,7 @@ class AmazonAPI(object):
         # If number of messages recovered is the max (10) we are going to create a delayed job to recover more messages
         if len(messages) == 10:
             # We are going to create a new cursor to can throw the new job now
-            new_cr = RegistryManager.get(self._backend.env.cr.dbname).cursor()
+            new_cr = registry.get(self._backend.env.cr.dbname).cursor()
             env = api.Environment(new_cr, self._backend.env.uid, self._backend.env.context)
             amazon_sqs_message = env['amazon.config.sqs.message']
             delayable = amazon_sqs_message.with_delay(priority=7, eta=datetime.now())

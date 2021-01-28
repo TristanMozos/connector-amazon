@@ -10,4 +10,3 @@ from . import binder
 from . import exporter
 from . import importer
 from . import mapper
-from . import event

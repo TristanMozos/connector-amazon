@@ -56,18 +56,6 @@
                     </group>
                 </group>
                 <footer>
-                    <group>
-                        <button name="%(action_view_wizard_amazon_import_products)d" string="Import Inventory" type="action" class="oe_highlight"/>
-                    </group>
-                    <group>
-                        <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
-                    </group>
-                    <group>
-                        <button name="%(action_view_wizard_amazon_import_order)d" string="Import Order" type="action" class="oe_highlight"/>
-                    </group>
-                    <group>
-                        <button name="%(action_view_wizard_amazon_update_orders)d" string="Update Orders" type="action" class="oe_highlight"/>
-                    </group>
                 </footer>
             </form>
         </field>

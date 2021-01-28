@@ -22,7 +22,7 @@
 
 {
     'name':'Amazon Connector',
-    'version':'0.1.0',
+    'version':'0.2.0',
     'author':'Halltic eSolutions S.L.',
     'maintainer':'True',
     'website':'False',
@@ -47,7 +47,7 @@ Be carefull, this module install a harmfull utility to your e-commerce strategy.
 
 This module is a connector for Amazon. With this can connect your odoo instance with the Amazon account.
 Sell in Amazon has some dangers that you must be consider:
-* Amazon will have your suppliers because in a lot of cases you will need send to they the invoices to justify that the products are originals or 
+* Amazon will have your suppliers because in a lot of cases you will need send to they the invoices to justify that the products are originals or
 others behaivours. In this moment Amazon will know who is the supplier/s of the products that you sell.
 * Amazon could sell the same product that you. Remember that from the first moment they know where go to buy this.
 * Amazon could block your product to sell if you have a lot of sales of this (Remember that in this moment Amazon will are sell the same product that you)
@@ -146,12 +146,6 @@ To contribute to this module, please visit https://github.com/TristanMozos/
     'data':[
         'security/connector_security.xml',
         'security/ir.model.access.csv',
-        'wizards/wizard_import_orders.xml',
-        'wizards/wizard_export_products.xml',
-        'wizards/wizard_set_change_prices_margins_flag.xml',
-        'wizards/wizard_migrate_backend_products.xml',
-        'wizards/wizard_import_products.xml',
-        'wizards/wizard_delete_amazon_product.xml',
         'views/amazon_config_views.xml',
         'views/amazon_backend_views.xml',
         'views/amazon_order_views.xml',
@@ -164,6 +158,12 @@ To contribute to this module, please visit https://github.com/TristanMozos/
         'views/product_views.xml',
         'views/res_partner_views.xml',
         'views/sale_order_views.xml',
+        'wizards/wizard_import_orders.xml',
+        'wizards/wizard_export_products.xml',
+        'wizards/wizard_set_change_prices_margins_flag.xml',
+        'wizards/wizard_migrate_backend_products.xml',
+        'wizards/wizard_import_products.xml',
+        'wizards/wizard_delete_amazon_product.xml',
         'data/amazon_scheduler.xml',
         'data/amazon_connector_data.xml',
         'data/amazon_connector_config_settings.xml',

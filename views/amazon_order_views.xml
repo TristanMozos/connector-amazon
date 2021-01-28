@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_amazon_order_tree" model="ir.ui.view">
+    <!--record id="view_amazon_order_tree" model="ir.ui.view">
         <field name="name">Orders</field>
         <field name="model">amazon.sale.order</field>
         <field name="arch" type="xml">
@@ -67,7 +67,7 @@
         <field name="res_model">amazon.sale.order</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_order_tree"/>
-    </record>
+    </record-->
 
 
 

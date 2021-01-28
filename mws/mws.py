@@ -6,13 +6,13 @@
 #
 
 from time import gmtime, strftime
+from . import utils
+
 import urllib
 import hashlib
 import hmac
 import base64
 import re
-
-import utils
 
 try:
     from xml.etree.ElementTree import ParseError as XMLError
