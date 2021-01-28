@@ -27,7 +27,7 @@ class SaleOrderBatchImporter(Component):
         # Get new sales and sales updated
         sales = self.backend_adapter.search(filters)
         _logger.info('get report of saleorders returned %s', sales.keys())
-        for sale in sales.iteritems():
+        for sale in sales.items():
             sale_binding_model = self.env['amazon.sale.order']
             if not self.backend_record.check_same_import_jobs(model=sale_binding_model._name, key=sale[0] if isinstance(sale, (tuple, list)) else sale):
                 delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now() + timedelta(minutes=2))

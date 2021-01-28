@@ -37,7 +37,7 @@ class ReportBatchImporter(Component):
                     _logger.info('search for amazon products %s returned %s',
                                  filters, products.keys())
                     product_binding_model = self.env['amazon.product.product']
-                    for product in products.iteritems():
+                    for product in products.items():
                         # We check if there are other tasks with the same data
                         # if not self.backend_record.check_same_import_jobs(model=product_binding_model._name,
                         #                                                  key=product[0] if isinstance(product, (tuple, list)) else product):
@@ -54,14 +54,14 @@ class ReportBatchImporter(Component):
             sales = self.backend_adapter.get_report(arguments=filters)
             _logger.info('get report of saleorders returned %s', sales.keys())
             sale_binding_model = self.env['amazon.sale.order']
-            for sale in sales.iteritems():
+            for sale in sales.items():
                 delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now())
                 delayable.import_record(self.backend_record, sale)
         elif method == 'get_customer_feedbacks':
             feedbacks = self.backend_adapter.get_report(arguments=filters)
             _logger.info('get report of customer feedbacks returned %s', feedbacks.keys())
             feedback_binding_model = self.env['amazon.res.partner.feedback']
-            for feedback in feedbacks.iteritems():
+            for feedback in feedbacks.items():
                 delayable = feedback_binding_model.with_delay(priority=9, eta=datetime.now())
                 delayable.import_record(self.backend_record, feedback)
         elif method == 'get_products_fee':
@@ -69,7 +69,7 @@ class ReportBatchImporter(Component):
             products_fee = self.backend_adapter.get_report(arguments=filters)
             _logger.info('Get report of product fee returned %s', products_fee.keys())
             feedback_binding_model = self.env['amazon.res.partner.feedback']
-            for feedback in products_fee.iteritems():
+            for feedback in products_fee.items():
                 delayable = feedback_binding_model.with_delay(priority=9, eta=datetime.now())
                 delayable.import_record(self.backend_record, feedback)
 

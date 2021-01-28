@@ -2,8 +2,8 @@
 <odoo>
 
     <record id="wizard_import_products_form" model="ir.ui.view">
-        <field name="name" >Wizard Import Products</field>
-        <field name="model" >amazon.products.import.wizard</field>
+        <field name="name">Wizard Import Products</field>
+        <field name="model">amazon.products.import.wizard</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
@@ -14,7 +14,7 @@
                                 string="Import inventory"
                                 class="oe_highlight"/>
                     </footer>
-               </sheet>
+                </sheet>
             </form>
         </field>
     </record>
@@ -29,5 +29,20 @@
         <field name="multi">True</field>
         <field name="key2">client_action_multi</field>
     </record>
+
+    <record model="ir.ui.view" id="amazon_backend_add_button_import_inventory_form">
+        <field name="name">add_button_to_import_inventory_view</field>
+        <field name="model">amazon.backend</field>
+        <field name="inherit_id" ref="connector_amazon.view_amazon_backend_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//footer" position="inside">
+                <group>
+                    <button name="%(action_view_wizard_amazon_import_products)d" string="Import Inventory" type="action" class="oe_highlight"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
 
 </odoo>

@@ -12,16 +12,16 @@ from odoo.addons.queue_job.job import job
 _logger = logging.getLogger(__name__)
 
 # TODO delete deprecated types
-FEED_TYPES = {'Update_stock':'_POST_INVENTORY_AVAILABILITY_DATA_', # Deprecated
-              'Add_products_csv':'_POST_FLAT_FILE_INVLOADER_DATA_', # Deprecated
-              'Update_stock_price':'_POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA_', # Deprecated
-              'Confirm_shipment':'_POST_FLAT_FILE_FULFILLMENT_DATA_', # Deprecated
+FEED_TYPES = {'Update_stock':'_POST_INVENTORY_AVAILABILITY_DATA_',  # Deprecated
+              'Add_products_csv':'_POST_FLAT_FILE_INVLOADER_DATA_',  # Deprecated
+              'Update_stock_price':'_POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA_',  # Deprecated
+              'Confirm_shipment':'_POST_FLAT_FILE_FULFILLMENT_DATA_',  # Deprecated
               'Migrate_backend':'Migrate backend',
               '_POST_INVENTORY_AVAILABILITY_DATA_':'Update stock',
-              '_POST_PRODUCT_PRICING_DATA_': 'Update price',
-              '_POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA_': 'Update stock price',
+              '_POST_PRODUCT_PRICING_DATA_':'Update price',
+              '_POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA_':'Update stock price',
               '_POST_FLAT_FILE_INVLOADER_DATA_':'Add products csv',
-              '_POST_PRODUCT_DATA_DELETE_': 'Delete inventory products',
+              '_POST_PRODUCT_DATA_DELETE_':'Delete inventory products',
               '_POST_FLAT_FILE_FULFILLMENT_DATA_':'Confirm shipment',
               '_POST_PRODUCT_DATA_':'Create/delete product',
               '_POST_PRODUCT_OVERRIDES_DATA_':'_POST_PRODUCT_OVERRIDES_DATA_',
@@ -65,13 +65,13 @@ class AmazonFeed(models.Model):
 
     def get_feed_types(self):
         lst = []
-        for key, value in FEED_TYPES.iteritems():
+        for key, value in FEED_TYPES.items():
             lst.append((key, value))
         return lst
 
     def get_feed_status(self):
         lst = []
-        for key, value in FEED_STATUS.iteritems():
+        for key, value in FEED_STATUS.items():
             lst.append((key, value))
         return lst
 
@@ -109,9 +109,10 @@ class AmazonFeedToThrow(models.Model):
 
     def get_feed_types(self):
         lst = []
-        for key, value in FEED_TYPES.iteritems():
+        for key, value in FEED_TYPES.items():
             lst.append((key, value))
         return lst
+
 
 class AmazonFeedResult(models.Model):
     _name = 'amazon.feed.result'
@@ -122,7 +123,6 @@ class AmazonFeedResult(models.Model):
     messages_werror = fields.Integer('Messages with error')
     messages_wwarning = fields.Integer('Messages with warning')
     message = fields.Char()
-
 
 
 class AmazonFeedAdapter(Component):

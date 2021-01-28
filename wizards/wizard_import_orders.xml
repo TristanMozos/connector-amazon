@@ -2,8 +2,8 @@
 <odoo>
 
     <record id="wizard_import_orders_form" model="ir.ui.view">
-        <field name="name" >Wizard Import Orders</field>
-        <field name="model" >amazon.orders.import.wizard</field>
+        <field name="name">Wizard Import Orders</field>
+        <field name="model">amazon.orders.import.wizard</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
@@ -19,14 +19,14 @@
                                 string="Import"
                                 class="oe_highlight"/>
                     </footer>
-               </sheet>
+                </sheet>
             </form>
         </field>
     </record>
 
     <record id="wizard_update_orders_form" model="ir.ui.view">
-        <field name="name" >Wizard Update Orders</field>
-        <field name="model" >amazon.orders.import.wizard</field>
+        <field name="name">Wizard Update Orders</field>
+        <field name="model">amazon.orders.import.wizard</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
@@ -41,14 +41,14 @@
                                 string="Import"
                                 class="oe_highlight"/>
                     </footer>
-               </sheet>
+                </sheet>
             </form>
         </field>
     </record>
 
     <record id="wizard_import_order_form" model="ir.ui.view">
-        <field name="name" >Wizard Import Order by Id</field>
-        <field name="model" >amazon.order.import.wizard</field>
+        <field name="name">Wizard Import Order by Id</field>
+        <field name="model">amazon.order.import.wizard</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
@@ -62,11 +62,10 @@
                                 string="Import"
                                 class="oe_highlight"/>
                     </footer>
-               </sheet>
+                </sheet>
             </form>
         </field>
     </record>
-
 
 
     <record id="action_view_wizard_amazon_update_orders" model="ir.actions.act_window">
@@ -96,27 +95,24 @@
         <field name="target">new</field>
     </record>
 
-      <record model="ir.ui.view" id="amazon_backend_add_buttons_import_orders_form">
-      <field name="name">add_buttons_to_import_sales_view</field>
-      <field name="model">amazon.backend</field>
-      <field name="inherit_id" ref="connector_amazon.view_amazon_backend_form"/>
-      <field name="mode">primary</field>
-      <field name="arch" type="xml">
-          <xpath expr="//footer" position="inside">
-            <group>
-                <button name="%(action_view_wizard_amazon_import_products)d" string="Import Inventory" type="action" class="oe_highlight"/>
-            </group>
-            <group>
-                <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
-            </group>
-            <group>
-                <button name="%(action_view_wizard_amazon_import_order)d" string="Import Order" type="action" class="oe_highlight"/>
-            </group>
-            <group>
-                <button name="%(action_view_wizard_amazon_update_orders)d" string="Update Orders" type="action" class="oe_highlight"/>
-            </group>
-          </xpath>
-      </field>
+    <record model="ir.ui.view" id="amazon_backend_add_buttons_import_orders_form">
+        <field name="name">add_buttons_to_import_sales_view</field>
+        <field name="model">amazon.backend</field>
+        <field name="inherit_id" ref="connector_amazon.view_amazon_backend_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//footer" position="inside">
+                <group>
+                    <button name="%(action_view_wizard_amazon_import_orders)d" string="Import Orders" type="action" class="oe_highlight"/>
+                </group>
+                <group>
+                    <button name="%(action_view_wizard_amazon_import_order)d" string="Import Order" type="action" class="oe_highlight"/>
+                </group>
+                <group>
+                    <button name="%(action_view_wizard_amazon_update_orders)d" string="Update Orders" type="action" class="oe_highlight"/>
+                </group>
+            </xpath>
+        </field>
     </record>
 
 </odoo>
