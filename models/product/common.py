@@ -870,9 +870,9 @@ class ProductTemplate(models.Model):
 
 
 class AmazonProductUoM(models.Model):
-    _name = 'amazon.product.uom'
+    _name = 'amazon.uom.uom'
 
-    product_uom_id = fields.Many2one('product.uom', 'Product UoM')
+    product_uom_id = fields.Many2one('uom.uom', 'Product UoM')
     name = fields.Char()
 
 

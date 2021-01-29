@@ -34,14 +34,12 @@
         <field name="view_mode">tree</field>
         <field name="view_id" ref="connector_amazon.view_amazon_product_form"/>
         <field name="target">current</field>
-        <field name="key2">client_action_multi</field>
     </record>
 
     <record id="action_get_products_to_migrate_backend_wizard" model="ir.actions.server">
         <field name="name">Migrate backend</field>
         <field name="model_id" ref="connector_amazon.model_amazon_product_product"/>
         <field name="state">code</field>
-        <field name="condition">True</field>
         <field name="code">action = env.get('amazon.migrate.backend.products.wizard').get_amazon_products_to_migrate()</field>
     </record>
 
@@ -49,7 +47,6 @@
         <field name="name">name</field>
         <field name="model">amazon.product.product</field>
         <field name="key">action</field>
-        <field name="key2">client_action_multi</field>
         <field name="value" eval="'ir.actions.server,%d'%action_get_products_to_migrate_backend_wizard"/>
     </record>
 
@@ -65,8 +62,9 @@
         <field name="name">name</field>
         <field name="model">res.partner</field>
         <field name="key">action</field>
-        <field name="key2">client_action_multi</field>
         <field name="value" eval="'ir.actions.server,%d'%action_supplier_products_to_migrate_backend_wizard"/>
     </record>
+
+
 
 </odoo>

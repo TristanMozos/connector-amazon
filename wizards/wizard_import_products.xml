@@ -26,8 +26,6 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="wizard_import_products_form"/>
         <field name="target">new</field>
-        <field name="multi">True</field>
-        <field name="key2">client_action_multi</field>
     </record>
 
     <record model="ir.ui.view" id="amazon_backend_add_button_import_inventory_form">

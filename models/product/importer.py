@@ -218,7 +218,7 @@ class ProductImporter(Component):
 
         ept = self.env['product.template']
         ppt = ept.pool.get('product.template')
-        epu = self.env['amazon.product.uom']
+        epu = self.env['amazon.uom.uom']
 
         if product_data.get('height') and not binding.product_tmpl_id.height:
             # If we have height from amazon, we import the value in meters
@@ -268,7 +268,7 @@ class ProductImporter(Component):
                     amaz_w_units = product_data['weight'].getvalue('Units').lower()
                     weight_units = epu.search([('name', '=', amaz_w_units)])
                     if weight_units and weight_units.product_uom_id.uom_type != 'reference':
-                        weight_reference = self.env['product.uom'].search(
+                        weight_reference = self.env['uom.uom'].search(
                             [('category_id', '=', weight_units.product_uom_id.category_id.id), ('uom_type', '=', 'reference')])
                         product_data['weight'] = weight_units.product_uom_id._compute_quantity(qty=float(product_data['weight'].value),
                                                                                                to_unit=weight_reference)

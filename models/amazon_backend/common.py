@@ -248,7 +248,7 @@ class AmazonBackend(models.Model):
             # If the start date to get sales is empty we put now as date
             if not import_start_time:
                 if backend.import_sales_from_date:
-                    import_start_time = datetime.strptime(backend.import_sales_from_date, '%Y-%m-%d %H:%M:%S')
+                    import_start_time = backend.import_sales_from_date
                 else:
                     import_start_time = import_end_time
 
@@ -289,7 +289,7 @@ class AmazonBackend(models.Model):
                 import_end_time = datetime.strptime(datetime.today().strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') - timedelta(minutes=2)
             if not import_start_time:
                 if backend.import_sales_from_date:
-                    import_start_time = datetime.strptime(backend.import_updated_sales_from_date, '%Y-%m-%d %H:%M:%S')
+                    import_start_time = backend.import_updated_sales_from_date
                 else:
                     import_start_time = import_end_time
 

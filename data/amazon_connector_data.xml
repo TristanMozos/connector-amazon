@@ -8,89 +8,73 @@
             <field name="active">true</field>
 			<field name="use_quotations">true</field>
         </record>
-	
+
 		<!-- Amazon orders status -->
 		<record id="amazon_order_status_pending" model='amazon.config.order.status'>
             <field name="name">Pending</field>
-            <field name="sequence">10</field>
         </record>
-		
+
 		<record id="amazon_order_status_unshipped" model='amazon.config.order.status'>
             <field name="name">Unshipped</field>
-            <field name="sequence">20</field>
         </record>
-		
+
 		<record id="amazon_order_status_partiallyShipped" model='amazon.config.order.status'>
             <field name="name">PartiallyShipped</field>
-            <field name="sequence">30</field>
         </record>
-		
+
 		<record id="amazon_order_status_shipped" model='amazon.config.order.status'>
             <field name="name">Shipped</field>
-            <field name="sequence">40</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_status_canceled" model='amazon.config.order.status'>
             <field name="name">Canceled</field>
-            <field name="sequence">50</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_status_pendingAvailability" model='amazon.config.order.status'>
             <field name="name">PendingAvailability</field>
-            <field name="sequence">60</field>
-        </record>
-        
+                    </record>
+
         <!-- Amazon orders status updatables -->
 		<record id="amazon_order_status_u_pending" model='amazon.config.order.status.updatable'>
             <field name="name">Pending</field>
-            <field name="sequence">10</field>
-        </record>
-        
+                    </record>
+
 		<record id="amazon_order_status_u_unshipped" model='amazon.config.order.status.updatable'>
             <field name="name">Unshipped</field>
-            <field name="sequence">20</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_status_u_partiallyShipped" model='amazon.config.order.status.updatable'>
             <field name="name">PartiallyShipped</field>
-            <field name="sequence">30</field>
-        </record>
-		
+                    </record>
+
 		<!-- Amazon service level orders -->
 		<record id="amazon_order_level_service_expedited" model='amazon.config.order.levelservice'>
             <field name="name">Expedited</field>
-            <field name="sequence">10</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_level_service_freeeconomy" model='amazon.config.order.levelservice'>
             <field name="name">FreeEconomy</field>
-            <field name="sequence">20</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_level_service_nextday" model='amazon.config.order.levelservice'>
             <field name="name">NextDay</field>
-            <field name="sequence">30</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_level_service_sameday" model='amazon.config.order.levelservice'>
             <field name="name">SameDay</field>
-            <field name="sequence">40</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_level_service_buyertaxinfoSecondday" model='amazon.config.order.levelservice'>
             <field name="name">BuyerTaxInfo SecondDay</field>
-            <field name="sequence">50</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_level_service_scheduled" model='amazon.config.order.levelservice'>
             <field name="name">Scheduled</field>
-            <field name="sequence">60</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_order_level_service_standard" model='amazon.config.order.levelservice'>
             <field name="name">Standard</field>
-            <field name="sequence">70</field>
-        </record>
+                    </record>
 
         <!-- Activate langs for marketplaces -->
         <record id="base.lang_es" model='res.lang'>
@@ -126,49 +110,43 @@
 		<!-- Amazon marketplaces -->
 		<record id="amazon_marketplace_es" model='amazon.config.marketplace'>
             <field name="name">amazon.es</field>
-            <field name="codState">ES</field>
 			<field name="id_mws">A1RKKUPIHCS9HS</field>
             <field search="[('code','=','ES')]" model='res.country' name='country_id'/>
             <field search="[('code','=','es_ES')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-            <field name="sequence">10</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_marketplace_fr" model='amazon.config.marketplace'>
             <field name="name">amazon.fr</field>
             <field name="id_mws">A13V1IB3VIYZZH</field>
             <field search="[('code','=','FR')]" model='res.country' name='country_id'/>
             <field search="[('code','=','fr_FR')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-            <field name="sequence">20</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_marketplace_de" model='amazon.config.marketplace'>
             <field name="name">amazon.de</field>
             <field name="id_mws">A1PA6795UKMFR9</field>
             <field search="[('code','=','DE')]" model='res.country' name='country_id'/>
             <field search="[('code','=','de_DE')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-            <field name="sequence">30</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_marketplace_uk" model='amazon.config.marketplace'>
             <field name="name">amazon.co.uk</field>
             <field name="id_mws">A1F83G8C2ARO7P</field>
             <field search="[('code','=','GB')]" model='res.country' name='country_id'/>
             <field search="[('code','=','en_GB')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-            <field name="sequence">40</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_marketplace_it" model='amazon.config.marketplace'>
             <field name="name">amazon.it</field>
             <field name="id_mws">APJ6JRA9NG5V4</field>
             <field search="[('code','=','IT')]" model='res.country' name='country_id'/>
             <field search="[('code','=','it_IT')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-            <field name="sequence">50</field>
-        </record>
+                    </record>
 
         <record id="amazon_marketplace_ca" model='amazon.config.marketplace'>
             <field name="name">amazon.ca</field>
@@ -176,8 +154,7 @@
             <field search="[('code','=','CA')]" model='res.country' name='country_id'/>
             <field search="[('code','=','fr_CA')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-            <field name="sequence">60</field>
-        </record>
+                    </record>
 
         <record id="amazon_marketplace_us" model='amazon.config.marketplace'>
             <field name="name">amazon.com</field>
@@ -185,8 +162,7 @@
             <field search="[('code','=','US')]" model='res.country' name='country_id'/>
             <field search="[('code','=','en_US')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-            <field name="sequence">70</field>
-        </record>
+                    </record>
 
         <record id="amazon_marketplace_mx" model='amazon.config.marketplace'>
             <field name="name">amazon.com.mx</field>
@@ -194,97 +170,83 @@
             <field search="[('code','=','MX')]" model='res.country' name='country_id'/>
             <field search="[('code','=','es_MX')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-            <field name="sequence">80</field>
-        </record>
-		
+                    </record>
+
 		<!-- Amazon item condition -->
         <record id="amazon_item_condition_new" model='amazon.config.order.item.condition'>
             <field name="identifier">11</field>
             <field name="name">New</field>
-            <field name="sequence">10</field>
-        </record>
+                    </record>
 
         <record id="amazon_item_condition_used_like_new" model='amazon.config.order.item.condition'>
             <field name="identifier">2</field>
             <field name="name">Used, like new</field>
-            <field name="sequence">20</field>
-        </record>
+                    </record>
 
 		<record id="amazon_item_condition_used_verygood" model='amazon.config.order.item.condition'>
             <field name="identifier">3</field>
             <field name="name">Used, very good</field>
-            <field name="sequence">30</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_item_condition_used_good" model='amazon.config.order.item.condition'>
             <field name="identifier">3</field>
             <field name="name">Used, good</field>
-            <field name="sequence">40</field>
-        </record>
-		
+                    </record>
+
 		<record id="amazon_item_condition_used_aceptable" model='amazon.config.order.item.condition'>
             <field name="identifier">4</field>
             <field name="name">Used, aceptable</field>
-            <field name="sequence">50</field>
-        </record>
+                    </record>
 
         <record id="amazon_item_condition_collectible_like_new" model='amazon.config.order.item.condition'>
             <field name="identifier">5</field>
             <field name="name">Collectible, like new</field>
-            <field name="sequence">60</field>
-        </record>
+                    </record>
 
         <record id="amazon_item_condition_collectible_very_good" model='amazon.config.order.item.condition'>
             <field name="identifier">6</field>
             <field name="name">Collectible, very good</field>
-            <field name="sequence">70</field>
-        </record>
+                    </record>
 
         <record id="amazon_item_condition_collectible_good" model='amazon.config.order.item.condition'>
             <field name="identifier">7</field>
             <field name="name">Collectible, good</field>
-            <field name="sequence">80</field>
-        </record>
+                    </record>
 
         <record id="amazon_item_condition_collectible_acceptable" model='amazon.config.order.item.condition'>
             <field name="identifier">8</field>
             <field name="name">Collectible, acceptable</field>
-            <field name="sequence">90</field>
-        </record>
+                    </record>
 
         <!-- Amazon product type -->
         <record id="amazon_product_type_asin" model='amazon.config.product.type'>
             <field name="identifier">1</field>
             <field name="name">ASIN</field>
-            <field name="sequence">10</field>
-        </record>
+                    </record>
 
         <record id="amazon_product_type_isbn" model='amazon.config.product.type'>
             <field name="identifier">2</field>
             <field name="name">ISBN</field>
-            <field name="sequence">20</field>
-        </record>
+                    </record>
 
         <record id="amazon_product_type_upc" model='amazon.config.product.type'>
             <field name="identifier">3</field>
             <field name="name">UPC</field>
-            <field name="sequence">30</field>
-        </record>
+                    </record>
 
         <record id="amazon_product_type_ean" model='amazon.config.product.type'>
             <field name="identifier">4</field>
             <field name="name">EAN</field>
-            <field name="sequence">40</field>
-        </record>
+                    </record>
 
         <!-- Amazon product UoM -->
-        <record id="amazon_product_uom_pounds" model='amazon.product.uom'>
+        <record id="amazon_product_uom_pounds" model='amazon.uom.uom'>
             <field name="name">pounds</field>
-            <field search="[('name','=','lb(s)')]" model='product.uom' name='product_uom_id'/>
+            <field search="[('name','=','lb(s)')]" model='uom.uom' name='product_uom_id'/>
         </record>
-        <record id="amazon_product_uom_inches" model='amazon.product.uom'>
+        <record id="amazon_product_uom_inches" model='amazon.uom.uom'>
             <field name="name">inches</field>
-            <field search="[('name','=','inch(es)')]" model='product.uom' name='product_uom_id'/>
+            <field search="[('name','=','inch(es)')]" model='uom.uom' name='product_uom_id'/>
         </record>
     </data>
 </odoo>

@@ -5,7 +5,7 @@
     <field name="model">sale.order</field>
     <field name="inherit_id" ref="sale.view_order_form"/>
     <field name="arch" type="xml">
-        <field name="confirmation_date" position="after">
+        <field name="name" position="after">
             <field name="amazon_bind_id" string="Amazon sale" attrs="{'invisible': [('amazon_bind_id', '=', False)]}"/>
         </field>
     </field>
