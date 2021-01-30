@@ -1,9 +1,27 @@
 # -*- coding: utf-8 -*-
-# © 2018 Halltic eSolutions S.L.
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+##############################################################################
+#
+#    Odoo, Open Source Management Solution
+#    Copyright (C) 2019 Halltic eSolutions S.L. (https://www.halltic.com)
+#                  Tristán Mozos <tristan.mozos@halltic.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 # Basic interface to Amazon MWS on Odoo
 # Forked and modified code of https://github.com/czpython/python-amazon-mws
-#
+##############################################################################
+
 
 import base64
 import hashlib
@@ -11,6 +29,7 @@ import hmac
 import re
 import warnings
 
+from time import gmtime, strftime
 from requests import request
 from requests.exceptions import HTTPError
 
@@ -101,7 +120,7 @@ class DictWrapper(object):
         self.original = xml
         self.response = None
         self._rootkey = rootkey
-        self._mydict = utils.XML2Dict().fromstring(remove_xml_namespaces(xml))
+        self._mydict = utils.XML2Dict().fromstring(utils.remove_xml_namespaces(xml))
         self._response_dict = self._mydict.get(
             list(self._mydict.keys())[0], self._mydict
         )
@@ -188,7 +207,7 @@ class MWS(object):
             'AWSAccessKeyId': self._backend.access_key,
             self.ACCOUNT_TYPE: self._backend.seller,
             'SignatureVersion': '2',
-            'Timestamp': mws_utc_now(),
+            'Timestamp': utils.mws_utc_now(),
             'Version': self.version,
             'SignatureMethod': 'HmacSHA256',
         }
@@ -200,8 +219,6 @@ class MWS(object):
         """
         Make request to Amazon MWS API with these parameters
         """
-        from mws import __version__
-
         params = self.get_params()
         params.update(extra_data)
         pool = self._backend.pool.get('amazon.control.request')
@@ -216,8 +233,8 @@ class MWS(object):
             raise e
 
         # Clean parameters using backported utilities
-        params = remove_empty_param_keys(params)
-        params = clean_params_dict(params)
+        params = utils.remove_empty_param_keys(params)
+        params = utils.clean_params_dict(params)
 
         request_description = calc_request_description(params)
         signature = self.calc_signature(method, request_description)
@@ -228,7 +245,7 @@ class MWS(object):
             signature=quote(signature),
         )
         headers = {
-            "User-Agent": "python-amazon-mws/{} (Language=Python)".format(__version__)
+            "User-Agent": "python-amazon-mws/{} (Language=Python)"
         }
         headers.update(kwargs.get("extra_headers", {}))
 
@@ -331,7 +348,7 @@ class MWS(object):
             ),
             DeprecationWarning,
         )
-        return mws_utc_now().isoformat()
+        return utils.mws_utc_now().isoformat()
 
     def enumerate_param(self, param, values):
         """

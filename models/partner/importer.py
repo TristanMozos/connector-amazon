@@ -1,7 +1,24 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2017 Camptocamp SA
-# © 2016 Sodexis
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
+##############################################################################
+#
+#    Odoo, Open Source Management Solution
+#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#                  Tristán Mozos <tristan.mozos@halltic.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 
 import logging
 import re

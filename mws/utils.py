@@ -1,16 +1,38 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 26 15:42:07 2012
+##############################################################################
+#
+#    Odoo, Open Source Management Solution
+#    Copyright (C) 2019 Halltic eSolutions S.L. (https://www.halltic.com)
+#                  Tristán Mozos <tristan.mozos@halltic.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Basic interface to Amazon MWS on Odoo
+# Forked and modified code of https://github.com/czpython/python-amazon-mws
+##############################################################################
 
-Borrowed from https://github.com/timotheus/ebaysdk-python
-
-@author: pierre
-"""
 from __future__ import absolute_import
 from functools import wraps
 import re
 import datetime
+import json
 import xml.etree.ElementTree as ET
+
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
 
 
 class ObjectDict(dict):
@@ -284,6 +306,76 @@ def next_token_action(action_name):
         return _wrapped_func
 
     return _decorator
+
+def remove_xml_namespaces(data):
+    """Return namespaces found in the XML `data`, in either str or bytes format."""
+    pattern = r'xmlns(:ns2)?="[^"]+"|(ns2:)|(xml:)'
+    replacement = ""
+    if not isinstance(data, str):
+        # Encode the pattern and substitute to use them on bytes data.
+        pattern = pattern.encode()
+        replacement = replacement.encode()
+    return re.sub(pattern, replacement, data)
+
+def mws_utc_now():
+    """Returns the current UTC time, as expected by MWS.
+    Note that we set microseconds to 0 automatically with this method:
+    if you want the true UTC datetime, just run `datetime.datetime.utcnow()`.
+    """
+    return datetime.datetime.utcnow().replace(microsecond=0)
+
+def remove_empty_param_keys(params):
+    """Returns a copy of ``params`` dict where any key with a value of ``None``
+    or ``""`` (empty string) are removed.
+    """
+    return {k: v for k, v in params.items() if v is not None and v != ""}
+
+def clean_params_dict(params):
+    """Clean multiple param values in a dict, returning a new dict
+    containing the original keys and cleaned values.
+    """
+    cleaned_params = dict()
+    for key, val in params.items():
+        try:
+            cleaned_params[key] = clean_value(val)
+        except ValueError as exc:
+            from mws.mws import MWSError
+
+            raise MWSError(str(exc)) from exc
+    return cleaned_params
+
+def clean_value(val):
+    """Attempts to clean a value so that it can be sent in a request."""
+    if isinstance(val, (dict, list, set, tuple)):
+        raise ValueError("Cannot clean parameter value of type %s" % str(type(val)))
+
+    if isinstance(val, (datetime.datetime, datetime.date)):
+        return clean_date(val)
+    if isinstance(val, bool):
+        return clean_bool(val)
+
+    # For all else, assume a string, and clean that.
+    return clean_string(str(val))
+
+def clean_string(val):
+    """Passes a string value through `urllib.parse.quote` to clean it.
+    Safe characters permitted: -_.~
+    """
+    return quote(val, safe="-_.~")
+
+
+def clean_bool(val):
+    """Converts a boolean value to its JSON string equivalent."""
+    if val is not True and val is not False:
+        raise ValueError("Expected a boolean, got %s" % val)
+    return json.dumps(val)
+
+
+def clean_date(val):
+    """Converts a datetime.datetime or datetime.date to ISO 8601 string.
+    Further passes that string through `urllib.parse.quote`.
+    """
+    return clean_string(val.isoformat())
 
 
 # DEPRECATION: these are old names for these objects, which have been updated
