@@ -4,6 +4,7 @@
 
         <record model="ir.cron" id="ir_cron_amz_import_sale_orders">
             <field name="name">Amazon - Import Sales Orders</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">10</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
@@ -16,6 +17,7 @@
 
         <record model="ir.cron" id="ir_cron_amz_import_product_product">
             <field name="name">Amazon - Import Products</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">24</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
@@ -28,6 +30,7 @@
 
         <record id="ir_cron_get_customer_feedback_orders" model="ir.cron">
             <field name="name">Amazon - Import feedbacks from customer orders</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">12</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
@@ -40,6 +43,7 @@
 
         <record model="ir.cron" id="ir_cron_amz_export_product_product">
             <field name="name">Amazon - Export Products</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">3</field>
             <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
@@ -52,6 +56,7 @@
 
         <record model="ir.cron" id="ir_cron_amz_update_product_stock_prices">
             <field name="name">Amazon - Update Stock and Prices</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">24</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
@@ -65,6 +70,7 @@
         <!-- Automatic import products from suppliers -->
 		<record id="scheduler_fix_data_connector_amazon_action" model="ir.cron">
             <field name="name">Amazon - Fix data</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">3</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
@@ -77,6 +83,7 @@
 
         <record id="scheduler_get_price_changes_connector_amazon_action" model="ir.cron">
             <field name="name">Amazon - Get changes on product prices</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
@@ -89,6 +96,7 @@
 
         <record id="scheduler_throw_jobs_for_price_changes_action" model="ir.cron">
             <field name="name">Amazon - Throw jobs for product change prices</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
@@ -101,6 +109,7 @@
 
         <record id="scheduler_throw_feeds_connector_amazon_action" model="ir.cron">
             <field name="name">Amazon - Throw feeds</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">15</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
@@ -113,6 +122,7 @@
 
         <record id="scheduler_get_products_fee_action" model="ir.cron">
             <field name="name">Amazon - Get products fee</field>
+            <field eval="False" name="active"/>
             <field name="interval_number">24</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
