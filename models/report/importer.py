@@ -24,9 +24,9 @@ class ReportBatchImporter(Component):
         result = None
         method = filters['method']
         assert method
-        if method == 'submit_inventory_request':
-            result = self.backend_adapter.submit_report(report_name=method, filters=None)
-            _logger.info('submit report amazon returned id %s', result)
+        if method in ('submit_inventory_request', 'submit_sales_request', 'submit_feedbacks_report_request', 'submit_fee_product_request'):
+            result = self.backend_adapter.submit_report(report_name=method, filters=filters)
+            _logger.info('Submit report amazon returned id %s', result)
         elif method == 'get_inventory':
             try:
                 assert filters
@@ -48,16 +48,28 @@ class ReportBatchImporter(Component):
             except AssertionError:
                 _logger.error('There aren\'t report ids parameters for %s', method)
                 raise
-        elif method == 'submit_sales_request':
-            result = self.backend_adapter.submit_report(report_name=method, filters=filters)
         elif method == 'get_sales':
             sales = self.backend_adapter.get_report(arguments=filters)
             _logger.info('get report of saleorders returned %s', sales.keys())
             sale_binding_model = self.env['amazon.sale.order']
             for sale in sales.iteritems():
-                # if not self.backend_record.check_same_import_jobs(model=sale_binding_model._name, key=sale[0] if isinstance(sale, (tuple, list)) else sale):
                 delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now())
                 delayable.import_record(self.backend_record, sale)
+        elif method == 'get_customer_feedbacks':
+            feedbacks = self.backend_adapter.get_report(arguments=filters)
+            _logger.info('get report of customer feedbacks returned %s', feedbacks.keys())
+            feedback_binding_model = self.env['amazon.res.partner.feedback']
+            for feedback in feedbacks.iteritems():
+                delayable = feedback_binding_model.with_delay(priority=9, eta=datetime.now())
+                delayable.import_record(self.backend_record, feedback)
+        elif method == 'get_products_fee':
+            # TODO test it
+            products_fee = self.backend_adapter.get_report(arguments=filters)
+            _logger.info('Get report of product fee returned %s', products_fee.keys())
+            feedback_binding_model = self.env['amazon.res.partner.feedback']
+            for feedback in products_fee.iteritems():
+                delayable = feedback_binding_model.with_delay(priority=9, eta=datetime.now())
+                delayable.import_record(self.backend_record, feedback)
 
         return result
 

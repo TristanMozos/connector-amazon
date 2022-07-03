@@ -15,11 +15,6 @@
                             <field name="get_supplier_stock"/>
                             <field name="automatic_export_products" />
                             <field name="backend_id" attrs="{'invisible':[('automatic_export_products','=',False)], 'required':[('automatic_export_products','=',True)]}"/>
-                            <!--field name="amz_automatic_set_margins"/>
-                            <field name="amz_change_prices" attrs="{'invisible':[('amz_automatic_set_margins','=',False)]}"/>
-                            <field name="amz_min_margin" attrs="{'invisible':[('amz_automatic_set_margins','=',False),('amz_change_prices','!=','1')]}"/>
-                            <field name="amz_max_margin" attrs="{'invisible':[('amz_automatic_set_margins','=',False),('amz_change_prices','!=','1')]}"/>
-                            <field name="amz_min_price_margin_value" attrs="{'invisible':[('amz_automatic_set_margins','=',False),('amz_change_prices','!=','1')]}"/ -->
                             <group><button string="Set margins"
 		                        type="action"
 		                        name="%(connector_amazon.action_view_wizard_set_margins)d"

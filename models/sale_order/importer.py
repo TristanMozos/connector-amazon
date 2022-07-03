@@ -425,6 +425,7 @@ class SaleOrderImporter(Component):
                     'amount_total':amount_untaxed + amount_tax,
                 })
 
+
             date_order = datetime.strptime(binding.date_order, '%Y-%m-%d %H:%M:%S')
             date_latest_delivery = datetime.strptime(binding.date_latest_delivery, '%Y-%m-%d %H:%M:%S')
             difference = date_latest_delivery - date_order
@@ -465,6 +466,7 @@ class SaleOrderImporter(Component):
         else:
             self.external_id = external_id
         _super = super(SaleOrderImporter, self)
+
         return _super.run(self.external_id, force)
 
 

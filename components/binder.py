@@ -24,4 +24,5 @@ class AmazonModelBinder(Component):
         'amazon.sale.order',
         'amazon.sale.order.line',
         'amazon.res.partner',
+        'amazon.res.partner.feedback',
     ]

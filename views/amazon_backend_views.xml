@@ -31,6 +31,7 @@
                 <group><field name="developer"/></group>
                 <group><field name="import_sales_from_date"/></group>
                 <group><field name="import_updated_sales_from_date"/></group>
+                <!--group><field name="import_feedbacks_from_date"/></group-->
                 <group><field name="team_id"/></group>
                 <group><field name="sale_prefix"/></group>
                 <group><field name="warehouse_id"/></group>

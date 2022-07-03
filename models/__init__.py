@@ -15,3 +15,4 @@ from . import stock
 from . import fix_data
 from . import account_tax
 from . import message
+from . import performance

@@ -36,15 +36,8 @@
                       groups="connector_amazon.group_connector_amazon_user"
                       attrs="{'invisible': [('amazon_bind_id', '=', False)]}">
                     <group>
-                        <button name="%(action_delete_amazon_product)d"
-                                type="object"
-                                confirm="Are you sure that you want to delete this product?"
-                                string="Delete from Amazon"
-                                class="oe_highlight"/>
-
                         <field name="amazon_bind_id"/>
                         <field name="product_product_market_ids" widget="one2many_list"/>
-
                     </group>
                 </page>
             </page>

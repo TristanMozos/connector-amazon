@@ -72,6 +72,10 @@ class AmazonBackend(models.Model):
         string='Export updated prices',
     )
 
+    import_feedbacks_from_date = fields.Datetime(
+        string='Import feedbacks from date',
+    )
+
     sale_prefix = fields.Char(
         string='Sale Prefix',
         help="A prefix put before the name of imported sales orders.\n"
@@ -319,6 +323,44 @@ class AmazonBackend(models.Model):
             if update_import_date:
                 backend.write({'import_updated_sales_from_date':import_end_time})
 
+    @api.multi
+    def _import_customer_feedback_orders(self,
+                            import_start_time=None,
+                            import_end_time=None):
+
+        for backend in self:
+            user = backend.warehouse_id.company_id.user_tech_id
+            if not user:
+                user = self.env['res.users'].browse(self.env.uid)
+
+            if not import_end_time:
+                import_end_time = datetime.strptime(datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
+                                                    '%Y-%m-%d %H:%M:%S') - timedelta(minutes=2)
+
+            # If the start date to get sales is empty we put now as date
+            if not import_start_time:
+                if backend.import_feedbacks_from_date:
+                    import_start_time = datetime.strptime(backend.import_feedbacks_from_date, '%Y-%m-%d %H:%M:%S')
+                else:
+                    import_start_time = import_end_time
+
+            report_binding_model = self.env['amazon.report']
+
+            filters = {'method': 'submit_feedbacks_report_request'}
+            filters['date_start'] = import_start_time.isoformat()
+            filters['date_end'] = import_end_time.isoformat()
+            report_id = report_binding_model.import_batch(backend, filters=filters)
+
+            if report_id:
+                delayable = report_binding_model.with_delay(priority=7, eta=datetime.now() + timedelta(minutes=10))
+                filters = {'method': 'get_customer_feedbacks'}
+                filters['report_id'] = [report_id['report_ids']]
+                delayable.description = 'Generate customer feedbacks report to: %s' % backend.name
+                delayable.import_batch(backend, filters=filters)
+
+        return True
+
+
     @api.model
     def _update_product_stock_qty_prices(self):
         for backend in self:
@@ -364,7 +406,7 @@ class AmazonBackend(models.Model):
         for backend in backends:
             product_importer.get_products_initial_prices_and_fees(backend=backend)
 
-    def _throw_delayed_jobs_for_price_changess(self):
+    def _throw_delayed_jobs_for_price_changes(self):
         backends = self.env['amazon.backend'].search([('sqs_account_id', '!=', False)])
         for backend in backends:
 
@@ -416,6 +458,10 @@ class AmazonBackend(models.Model):
     @api.model
     def _scheduler_import_product_product(self, domain=None):
         self._amazon_backend('_import_product_product', domain=domain)
+
+    @api.model
+    def _scheduler_get_customer_feedback_orders(self, domain=None):
+        self._amazon_backend('_import_customer_feedback_orders', domain=domain)
 
     @api.model
     def _scheduler_export_product_product(self, domain=None):

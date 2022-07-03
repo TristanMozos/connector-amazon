@@ -95,6 +95,7 @@ class ProductStockPriceExporter(Component):
                 # Change price
                 self.calc_price_to_export(id_detail=detail.id)
 
+
     @api.multi
     def _get_offers_from_mws(self, detail):
         try:
@@ -157,10 +158,10 @@ class ProductStockPriceExporter(Component):
         if our_offer == current_offers:
             margin_max = detail.max_margin or detail.product_id.max_margin or detail.product_id.backend_id.max_margin
             try_price = detail.product_id.odoo_id._calc_amazon_price(backend=detail.product_id.backend_id,
-                                                                     margin=margin_max,
-                                                                     marketplace=detail.marketplace_id,
-                                                                     percentage_fee=detail.percentage_fee or AMAZON_DEFAULT_PERCENTAGE_FEE,
-                                                                     ship_price=detail.price_ship)
+                                                           margin=margin_max,
+                                                           marketplace=detail.marketplace_id,
+                                                           percentage_fee=detail.percentage_fee or AMAZON_DEFAULT_PERCENTAGE_FEE,
+                                                           ship_price=detail.price_ship)
 
             # The price will be changed on listener TODO test it
             detail.price = try_price
@@ -305,8 +306,7 @@ class ProductStockPriceExporter(Component):
                             (detail.change_prices != '0' and detail.product_id.change_prices != '0' and detail.product_id.backend_id.change_prices != '0')):
             # We are trying to get the fee of product
             try:
-                if not detail.last_update_price_date or datetime.strptime(detail.last_update_price_date, '%Y-%m-%d %H:%M:%S') < datetime.today() - timedelta(
-                        hours=24):
+                if not detail.last_update_price_date or datetime.strptime(detail.last_update_price_date, '%Y-%m-%d %H:%M:%S')<datetime.today()-timedelta(hours=24):
                     importer = self.work.component(usage='amazon.product.price.import')
                     importer.run_update_price(detail)
             except Exception as e:
@@ -525,6 +525,7 @@ class ProductExporter(Component):
             # TODO Create a list of products to create
             vals = {'product_id':product.product_tmpl_id.id}
             self.env['amazon.report.product.to.create'].create(vals)
+
 
     def run(self, record):
         """ Change the prices on Amazon.

@@ -29,4 +29,5 @@
 "access_amazon_config_product_brand_ban_manager","connector_amazon.config.manager","connector_amazon.model_amazon_brand_ban","connector_amazon.group_connector_amazon_manager",1,1,1,1
 "access_amazon_config_control_date_request_user","connector_amazon.config.user","connector_amazon.model_amazon_control_date_request","connector_amazon.group_connector_amazon_user",1,0,0,0
 "access_amazon_config_control_date_request_manager","connector_amazon.config.manager","connector_amazon.model_amazon_control_date_request","connector_amazon.group_connector_amazon_manager",1,1,1,1
-
+"access_amazon_res_partner_feedback_user","connector_amazon.config.user","connector_amazon.model_amazon_res_partner_feedback","connector_amazon.group_connector_amazon_user",1,0,0,0
+"access_amazon_res_partner_feedback_manager","connector_amazon.config.manager","connector_amazon.model_amazon_res_partner_feedback","connector_amazon.group_connector_amazon_manager",1,1,1,1

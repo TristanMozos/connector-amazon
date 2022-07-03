@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- PRODUCTS -->
+    <record id="view_amazon_feedback_tree" model="ir.ui.view">
+        <field name="name">amazon.res.partner.feedback.tree</field>
+        <field name="model">amazon.res.partner.feedback</field>
+        <field name="arch" type="xml">
+            <tree string="Amazon Product">
+                <field name="backend_id"/>
+                <field name="feedback_date"/>
+                <field name="amazon_sale_id"/>
+                <field name="qualification"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_amazon_feedback_form" model="ir.ui.view">
+        <field name="name">amazon.res.partner.feedback.form</field>
+        <field name="model">amazon.res.partner.feedback</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="backend_id"/></group>
+                <group><field name="feedback_date"/></group>
+                <group><field name="amazon_sale_id"/></group>
+                <group><field name="qualification"/></group>
+                <group><field name="message"/></group>
+                <group><field name="respond"/></group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_amazon_feedbacks" model="ir.actions.act_window">
+        <field name="name">Amazon Feedbacks</field>
+        <field name="res_model">amazon.res.partner.feedback</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_amazon_feedback_tree"/>
+    </record>
+
+</odoo>

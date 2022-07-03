@@ -117,6 +117,7 @@ class SaleExporter(Component):
             self.env['amazon.report.product.to.create'].create(vals)
             return
 
+    @api.model
     def run(self, record):
         """ Change the prices on Amazon.
         :param records: list of dictionaries of products with structure

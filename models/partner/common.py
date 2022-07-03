@@ -32,7 +32,6 @@ class AmazonResPartner(models.Model):
         _super = super(AmazonResPartner, self)
         return _super.import_record(backend, external_id)
 
-
 class AmazonPartnerAdapter(Component):
     _name = 'amazon.res.partner.adapter'
     _inherit = 'amazon.adapter'
@@ -53,9 +52,4 @@ class ResPartner(models.Model):
     automatic_export_products = fields.Boolean('Automatic export new products to Amazon?', default=False)
     backend_id = fields.Many2one('amazon.backend')
     automatic_export_all_markets = fields.Boolean('Automatic export to all backend markets?')
-    amz_automatic_set_margins = fields.Boolean('Automatic set margins')
-    amz_change_prices = fields.Selection(string='Change prices', selection=[('1', 'Yes'), ('0', 'No'), ])
-    amz_min_margin = fields.Float('Minimal margin', default=None)
-    amz_max_margin = fields.Float('Maximal margin', default=None)
-    amz_min_price_margin_value = fields.Float('Min price margin value', digits=(3, 2))
 

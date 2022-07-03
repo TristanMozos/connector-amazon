@@ -195,33 +195,29 @@ class SQSMessage(models.Model):
                 delayable.delete_old_historic_offer(vals)
 
     @api.multi
-    def _process_message(self, message=None, xml_message=None):
+    def _process_message(self, message):
         # We are going to delete the same messages
         messages = None
+        try:
+            messages = message.search([('id_message', '=', message.id_message)])
+        except MissingError as e:
+            return
+        message_to_process = False
+        has_been_processed = False
+        message_ids_to_delete = []
+        return_vals = {}
+        # It is a control for duplicate messages
+        if len(messages) > 1:
+            for mess in messages:
+                if mess.processed:
+                    has_been_processed = True
+                    message_to_process = True
+                if mess.id != message.id:
+                    message_ids_to_delete.append(mess.id)
+        elif len(messages) == 1 and messages.processed:
+            has_been_processed = True
 
-        if message:
-            try:
-                messages = message.search([('id_message', '=', message.id_message)])
-            except MissingError as e:
-                return
-            message_to_process = False
-            has_been_processed = False
-            message_ids_to_delete = []
-            return_vals = {}
-            # It is a control for duplicate messages
-            if len(messages) > 1:
-                for mess in messages:
-                    if mess.processed:
-                        has_been_processed = True
-                        message_to_process = True
-                    if mess.id != message.id:
-                        message_ids_to_delete.append(mess.id)
-            elif len(messages) == 1 and messages.processed:
-                has_been_processed = True
-
-            xml_message = message.body
-
-        if not has_been_processed and xml_message:
+        if not has_been_processed and message.body:
             root = ET.fromstring(message.body)
             notification = root.find('NotificationPayload').find('AnyOfferChangedNotification')
             offer_change_trigger = notification.find('OfferChangeTrigger')

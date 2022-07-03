@@ -70,6 +70,8 @@ class AmazonProductProduct(models.Model):
     units_to_change = fields.Float(digits=(3, 2))
     min_price_margin_value = fields.Float('Min price margin value', digits=(3, 2))
 
+
+
     handling_time = fields.Integer('Time to get since we received an order to send this')
 
     RECOMPUTE_QTY_STEP = 1000  # products at a time
@@ -239,7 +241,7 @@ class AmazonProductProduct(models.Model):
     def get_market_detail_product(self, market):
         if market:
             market_id = None
-            if not isinstance(market, (int, float)):
+            if not isinstance(market, (int,float)):
                 market_id = market.id
             else:
                 market_id = market
@@ -526,8 +528,7 @@ class SupplierInfo(models.Model):
             # If we have the flag to export to all markets
             elif self.name.automatic_export_all_markets:
                 # We check if we have only one product on Amazon per odoo product and the backends are the same
-                if self.product_id.amazon_bind_ids and len(
-                        self.product_id.amazon_bind_ids) == 1 and self.name.backend_id.id == self.product_id.amazon_bind_ids.backend_id.id:
+                if self.product_id.amazon_bind_ids and len(self.product_id.amazon_bind_ids) == 1 and self.name.backend_id.id == self.product_id.amazon_bind_ids.backend_id.id:
                     markets_of_product = self.product_id.amazon_bind_ids.product_product_market_ids.mapped('marketplace_id').mapped('id')
                     marketplaces = marketplaces.filtered(lambda market:market.id not in markets_of_product)
                     vals['asin'] = self.product_id.amazon_bind_ids.asin
@@ -754,8 +755,7 @@ class ProductProduct(models.Model):
             if not cost:
                 return None
 
-            return self._calc_amazon_price(backend=backend, margin=(amount_margin / cost) * 100, marketplace=marketplace, percentage_fee=percentage_fee,
-                                           ship_price=ship_price)
+            return self._calc_amazon_price(backend=backend, margin=(amount_margin/cost)*100, marketplace=marketplace, percentage_fee=percentage_fee, ship_price=ship_price)
 
         return None
 
