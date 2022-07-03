@@ -3,78 +3,78 @@
     <data noupdate="1">
 
         <!-- Amazon sales team to crm -->
-		<record id="amazon_crm_team" model='crm.team'>
+        <record id="amazon_crm_team" model='crm.team'>
             <field name="name">Amazon Sales</field>
             <field name="active">true</field>
-			<field name="use_quotations">true</field>
+            <field name="use_quotations">true</field>
         </record>
 
-		<!-- Amazon orders status -->
-		<record id="amazon_order_status_pending" model='amazon.config.order.status'>
+        <!-- Amazon orders status -->
+        <record id="amazon_order_status_pending" model='amazon.config.order.status'>
             <field name="name">Pending</field>
         </record>
 
-		<record id="amazon_order_status_unshipped" model='amazon.config.order.status'>
+        <record id="amazon_order_status_unshipped" model='amazon.config.order.status'>
             <field name="name">Unshipped</field>
         </record>
 
-		<record id="amazon_order_status_partiallyShipped" model='amazon.config.order.status'>
+        <record id="amazon_order_status_partiallyShipped" model='amazon.config.order.status'>
             <field name="name">PartiallyShipped</field>
         </record>
 
-		<record id="amazon_order_status_shipped" model='amazon.config.order.status'>
+        <record id="amazon_order_status_shipped" model='amazon.config.order.status'>
             <field name="name">Shipped</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_status_canceled" model='amazon.config.order.status'>
+        <record id="amazon_order_status_canceled" model='amazon.config.order.status'>
             <field name="name">Canceled</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_status_pendingAvailability" model='amazon.config.order.status'>
+        <record id="amazon_order_status_pendingAvailability" model='amazon.config.order.status'>
             <field name="name">PendingAvailability</field>
-                    </record>
+        </record>
 
         <!-- Amazon orders status updatables -->
-		<record id="amazon_order_status_u_pending" model='amazon.config.order.status.updatable'>
+        <record id="amazon_order_status_u_pending" model='amazon.config.order.status.updatable'>
             <field name="name">Pending</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_status_u_unshipped" model='amazon.config.order.status.updatable'>
+        <record id="amazon_order_status_u_unshipped" model='amazon.config.order.status.updatable'>
             <field name="name">Unshipped</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_status_u_partiallyShipped" model='amazon.config.order.status.updatable'>
+        <record id="amazon_order_status_u_partiallyShipped" model='amazon.config.order.status.updatable'>
             <field name="name">PartiallyShipped</field>
-                    </record>
+        </record>
 
-		<!-- Amazon service level orders -->
-		<record id="amazon_order_level_service_expedited" model='amazon.config.order.levelservice'>
+        <!-- Amazon service level orders -->
+        <record id="amazon_order_level_service_expedited" model='amazon.config.order.levelservice'>
             <field name="name">Expedited</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_level_service_freeeconomy" model='amazon.config.order.levelservice'>
+        <record id="amazon_order_level_service_freeeconomy" model='amazon.config.order.levelservice'>
             <field name="name">FreeEconomy</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_level_service_nextday" model='amazon.config.order.levelservice'>
+        <record id="amazon_order_level_service_nextday" model='amazon.config.order.levelservice'>
             <field name="name">NextDay</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_level_service_sameday" model='amazon.config.order.levelservice'>
+        <record id="amazon_order_level_service_sameday" model='amazon.config.order.levelservice'>
             <field name="name">SameDay</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_level_service_buyertaxinfoSecondday" model='amazon.config.order.levelservice'>
+        <record id="amazon_order_level_service_buyertaxinfoSecondday" model='amazon.config.order.levelservice'>
             <field name="name">BuyerTaxInfo SecondDay</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_level_service_scheduled" model='amazon.config.order.levelservice'>
+        <record id="amazon_order_level_service_scheduled" model='amazon.config.order.levelservice'>
             <field name="name">Scheduled</field>
-                    </record>
+        </record>
 
-		<record id="amazon_order_level_service_standard" model='amazon.config.order.levelservice'>
+        <record id="amazon_order_level_service_standard" model='amazon.config.order.levelservice'>
             <field name="name">Standard</field>
-                    </record>
+        </record>
 
         <!-- Activate langs for marketplaces -->
         <record id="base.lang_es" model='res.lang'>
@@ -84,7 +84,7 @@
             <field name="active" eval="True"/>
         </record>
         <record id="base.lang_de" model='res.lang'>
-            <field name="active" eval="True" />
+            <field name="active" eval="True"/>
         </record>
         <record id="base.lang_it" model='res.lang'>
             <field name="active" eval="True"/>
@@ -104,49 +104,130 @@
 
         <!-- Activate pound currency -->
         <record id="base.GBP" model="res.currency">
-			<field name="active" eval="True"/>
-		</record>
+            <field name="active" eval="True"/>
+        </record>
 
-		<!-- Amazon marketplaces -->
-		<record id="amazon_marketplace_es" model='amazon.config.marketplace'>
-            <field name="name">amazon.es</field>
-			<field name="id_mws">A1RKKUPIHCS9HS</field>
-            <field search="[('code','=','ES')]" model='res.country' name='country_id'/>
-            <field search="[('code','=','es_ES')]" model='res.lang' name='lang_id'/>
+        <!-- Amazon marketplaces -->
+
+        <record id="amazon_marketplace_ae" model='amazon.config.marketplace'>
+            <field name="name">amazon.ae</field>
+            <field name="id_mws">A2VIGQ35RCS4UG</field>
+            <field search="[('code','=','AE')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','ar_001')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-                    </record>
+        </record>
 
-		<record id="amazon_marketplace_fr" model='amazon.config.marketplace'>
-            <field name="name">amazon.fr</field>
-            <field name="id_mws">A13V1IB3VIYZZH</field>
-            <field search="[('code','=','FR')]" model='res.country' name='country_id'/>
-            <field search="[('code','=','fr_FR')]" model='res.lang' name='lang_id'/>
-            <field name="decimal_currency_separator">,</field>
-                    </record>
-
-		<record id="amazon_marketplace_de" model='amazon.config.marketplace'>
+        <record id="amazon_marketplace_de" model='amazon.config.marketplace'>
             <field name="name">amazon.de</field>
             <field name="id_mws">A1PA6795UKMFR9</field>
             <field search="[('code','=','DE')]" model='res.country' name='country_id'/>
             <field search="[('code','=','de_DE')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-                    </record>
+        </record>
 
-		<record id="amazon_marketplace_uk" model='amazon.config.marketplace'>
+        <record id="amazon_marketplace_eg" model='amazon.config.marketplace'>
+            <field name="name">amazon.eg</field>
+            <field name="id_mws">ARBP9OOSHTCHU</field>
+            <field search="[('code','=','EG')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','ar_001')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_es" model='amazon.config.marketplace'>
+            <field name="name">amazon.es</field>
+            <field name="id_mws">A1RKKUPIHCS9HS</field>
+            <field search="[('code','=','ES')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','es_ES')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_fr" model='amazon.config.marketplace'>
+            <field name="name">amazon.fr</field>
+            <field name="id_mws">A13V1IB3VIYZZH</field>
+            <field search="[('code','=','FR')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','fr_FR')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_be" model='amazon.config.marketplace'>
+            <field name="name">amazon.be</field>
+            <field name="id_mws">AMEN7PMS3EDWL</field>
+            <field search="[('code','=','BE')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','nl_BE')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_uk" model='amazon.config.marketplace'>
             <field name="name">amazon.co.uk</field>
             <field name="id_mws">A1F83G8C2ARO7P</field>
             <field search="[('code','=','GB')]" model='res.country' name='country_id'/>
             <field search="[('code','=','en_GB')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-                    </record>
+        </record>
 
-		<record id="amazon_marketplace_it" model='amazon.config.marketplace'>
+        <record id="amazon_marketplace_in" model='amazon.config.marketplace'>
+            <field name="name">amazon.in</field>
+            <field name="id_mws">A21TJRUUN4KGV</field>
+            <field search="[('code','=','IN')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','hi_IN')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
+        </record>
+
+        <record id="amazon_marketplace_it" model='amazon.config.marketplace'>
             <field name="name">amazon.it</field>
             <field name="id_mws">APJ6JRA9NG5V4</field>
             <field search="[('code','=','IT')]" model='res.country' name='country_id'/>
             <field search="[('code','=','it_IT')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">,</field>
-                    </record>
+        </record>
+
+        <record id="amazon_marketplace_nl" model='amazon.config.marketplace'>
+            <field name="name">amazon.nl</field>
+            <field name="id_mws">A1805IZSGTT6HS</field>
+            <field search="[('code','=','NL')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','nl_NL')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_pl" model='amazon.config.marketplace'>
+            <field name="name">amazon.pl</field>
+            <field name="id_mws">A1C3SOZRARQ6R3</field>
+            <field search="[('code','=','PL')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','pl_PL')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_sa" model='amazon.config.marketplace'>
+            <field name="name">amazon.sa</field>
+            <field name="id_mws">A17E79C6D8DWNP</field>
+            <field search="[('code','=','SA')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','ar_001')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_se" model='amazon.config.marketplace'>
+            <field name="name">amazon.se</field>
+            <field name="id_mws">A2NODRKZP88ZB9</field>
+            <field search="[('code','=','SE')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','sv_SE')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_tr" model='amazon.config.marketplace'>
+            <field name="name">amazon.tr</field>
+            <field name="id_mws">A33AVAJ2PDY3EV</field>
+            <field search="[('code','=','TR')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','tr_TR')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
+
+        <record id="amazon_marketplace_br" model='amazon.config.marketplace'>
+            <field name="name">amazon.br</field>
+            <field name="id_mws">A2Q3Y263D00KWC</field>
+            <field search="[('code','=','BR')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','pt_BR')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">,</field>
+        </record>
 
         <record id="amazon_marketplace_ca" model='amazon.config.marketplace'>
             <field name="name">amazon.ca</field>
@@ -154,15 +235,7 @@
             <field search="[('code','=','CA')]" model='res.country' name='country_id'/>
             <field search="[('code','=','fr_CA')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-                    </record>
-
-        <record id="amazon_marketplace_us" model='amazon.config.marketplace'>
-            <field name="name">amazon.com</field>
-            <field name="id_mws">ATVPDKIKX0DER</field>
-            <field search="[('code','=','US')]" model='res.country' name='country_id'/>
-            <field search="[('code','=','en_US')]" model='res.lang' name='lang_id'/>
-            <field name="decimal_currency_separator">.</field>
-                    </record>
+        </record>
 
         <record id="amazon_marketplace_mx" model='amazon.config.marketplace'>
             <field name="name">amazon.com.mx</field>
@@ -170,74 +243,106 @@
             <field search="[('code','=','MX')]" model='res.country' name='country_id'/>
             <field search="[('code','=','es_MX')]" model='res.lang' name='lang_id'/>
             <field name="decimal_currency_separator">.</field>
-                    </record>
+        </record>
 
-		<!-- Amazon item condition -->
+        <record id="amazon_marketplace_us" model='amazon.config.marketplace'>
+            <field name="name">amazon.com</field>
+            <field name="id_mws">ATVPDKIKX0DER</field>
+            <field search="[('code','=','US')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','en_US')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
+        </record>
+
+        <record id="amazon_marketplace_sg" model='amazon.config.marketplace'>
+            <field name="name">amazon.sg</field>
+            <field name="id_mws">A19VAU5U5O7RUS</field>
+            <field search="[('code','=','SG')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','en')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
+        </record>
+
+        <record id="amazon_marketplace_au" model='amazon.config.marketplace'>
+            <field name="name">amazon.au</field>
+            <field name="id_mws">A39IBJ37TRP1C6</field>
+            <field search="[('code','=','AU')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','en_AU')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
+        </record>
+
+        <record id="amazon_marketplace_jp" model='amazon.config.marketplace'>
+            <field name="name">amazon.jp</field>
+            <field name="id_mws">A1VC38T7YXB528</field>
+            <field search="[('code','=','JP')]" model='res.country' name='country_id'/>
+            <field search="[('code','=','ja_JP')]" model='res.lang' name='lang_id'/>
+            <field name="decimal_currency_separator">.</field>
+        </record>
+
+        <!-- Amazon item condition -->
         <record id="amazon_item_condition_new" model='amazon.config.order.item.condition'>
             <field name="identifier">11</field>
             <field name="name">New</field>
-                    </record>
+        </record>
 
         <record id="amazon_item_condition_used_like_new" model='amazon.config.order.item.condition'>
             <field name="identifier">2</field>
             <field name="name">Used, like new</field>
-                    </record>
+        </record>
 
-		<record id="amazon_item_condition_used_verygood" model='amazon.config.order.item.condition'>
+        <record id="amazon_item_condition_used_verygood" model='amazon.config.order.item.condition'>
             <field name="identifier">3</field>
             <field name="name">Used, very good</field>
-                    </record>
+        </record>
 
-		<record id="amazon_item_condition_used_good" model='amazon.config.order.item.condition'>
+        <record id="amazon_item_condition_used_good" model='amazon.config.order.item.condition'>
             <field name="identifier">3</field>
             <field name="name">Used, good</field>
-                    </record>
+        </record>
 
-		<record id="amazon_item_condition_used_aceptable" model='amazon.config.order.item.condition'>
+        <record id="amazon_item_condition_used_aceptable" model='amazon.config.order.item.condition'>
             <field name="identifier">4</field>
             <field name="name">Used, aceptable</field>
-                    </record>
+        </record>
 
         <record id="amazon_item_condition_collectible_like_new" model='amazon.config.order.item.condition'>
             <field name="identifier">5</field>
             <field name="name">Collectible, like new</field>
-                    </record>
+        </record>
 
         <record id="amazon_item_condition_collectible_very_good" model='amazon.config.order.item.condition'>
             <field name="identifier">6</field>
             <field name="name">Collectible, very good</field>
-                    </record>
+        </record>
 
         <record id="amazon_item_condition_collectible_good" model='amazon.config.order.item.condition'>
             <field name="identifier">7</field>
             <field name="name">Collectible, good</field>
-                    </record>
+        </record>
 
         <record id="amazon_item_condition_collectible_acceptable" model='amazon.config.order.item.condition'>
             <field name="identifier">8</field>
             <field name="name">Collectible, acceptable</field>
-                    </record>
+        </record>
 
         <!-- Amazon product type -->
         <record id="amazon_product_type_asin" model='amazon.config.product.type'>
             <field name="identifier">1</field>
             <field name="name">ASIN</field>
-                    </record>
+        </record>
 
         <record id="amazon_product_type_isbn" model='amazon.config.product.type'>
             <field name="identifier">2</field>
             <field name="name">ISBN</field>
-                    </record>
+        </record>
 
         <record id="amazon_product_type_upc" model='amazon.config.product.type'>
             <field name="identifier">3</field>
             <field name="name">UPC</field>
-                    </record>
+        </record>
 
         <record id="amazon_product_type_ean" model='amazon.config.product.type'>
             <field name="identifier">4</field>
             <field name="name">EAN</field>
-                    </record>
+        </record>
 
         <!-- Amazon product UoM -->
         <record id="amazon_product_uom_pounds" model='amazon.uom.uom'>

@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2018 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import odoo
 
 from datetime import datetime, timedelta
 
-import boto3
 import dateutil.parser
 import unicodecsv
 from lxml import etree
@@ -41,7 +40,7 @@ from odoo.fields import Datetime, Date
 # from ..models.config.common import MAX_NUMBER_SQS_MESSAGES_TO_RECEIVE
 from ..mws.mws import MWSError
 
-MAX_NUMBER_FFED_TO_PROCESS = 5000000
+MAX_NUMBER_FEED_TO_PROCESS = 5000000
 
 _logger = logging.getLogger(__name__)
 
@@ -144,113 +143,6 @@ class AmazonAPI(object):
                         _logger.exception(
                             "Failed to update feeds : %s" % (feeds._name, str(e)))
 
-    def _save_sqs_messages(self, messages, remove_messages=True):
-        """
-        Method to get messages from sqs and save in our bbdd
-        :param messages:
-        :param remove_messages:
-        :return:
-        """
-        ddbb_messages = []
-        if messages:
-            for message in messages:
-                sqs_env = self._backend.env['amazon.config.sqs.message']
-                # We check if the message has been imported before
-                result = sqs_env.search_count([('id_message', '=', message['MessageId'])])
-                if not result:
-                    # If the message is new
-                    vals = {'id_message':message['MessageId'],
-                            'recept_handle':message['ReceiptHandle'],
-                            'body':message['Body'],
-                            'sqs_account_id':self._backend.sqs_account_id.id,
-                            'sqs_deleted':remove_messages}
-                    # Insert message in our ddbb and append to list of messages to return
-                    ddbb_messages.append(sqs_env.create(vals))
-
-                # We remove the message on sqs
-                if remove_messages:
-                    self._sqs.delete_message(
-                        QueueUrl=self._backend.sqs_account_id.queue_url,
-                        ReceiptHandle=message['ReceiptHandle']
-                    )
-        return ddbb_messages
-
-    def _create_jobs_from_sqs_messages(self, messages, remove_messages=True):
-        """
-        Method to get messages from sqs create job
-        :param messages:
-        :param remove_messages:
-        :return:
-        """
-        ddbb_messages = []
-        if messages:
-            for message in messages:
-                sqs_env = self._backend.env['amazon.config.sqs.message']
-                # We check if the message has been imported before
-                result = sqs_env.search_count([('id_message', '=', message['MessageId'])])
-                if not result:
-                    # If the message is new
-                    delayable = sqs_env.with_delay(priority=6, eta=datetime.now())
-                    filters = {'method':'process_price_message', 'xml':message['Body']}
-                    delayable.description = '%s.%s' % (self._name, 'process_price_message()')
-                    delayable.process_price_message(filters)
-
-                # We remove the message on sqs
-                if remove_messages:
-                    self._sqs.delete_message(
-                        QueueUrl=self._backend.sqs_account_id.queue_url,
-                        ReceiptHandle=message['ReceiptHandle']
-                    )
-        return ddbb_messages
-
-    def _receive_sqs_messages(self, max_number_messages=None):
-        if not max_number_messages:
-            max_number_messages = 10
-
-        # Receive message from SQS queue
-        response = self._sqs.receive_message(
-            QueueUrl=self._backend.sqs_account_id.queue_url,
-            AttributeNames=[
-                'SentTimestamp'
-            ],
-            MaxNumberOfMessages=max_number_messages,
-            MessageAttributeNames=[
-                'All'
-            ],
-            VisibilityTimeout=0,
-            WaitTimeSeconds=0
-        )
-
-        return response.get('Messages')
-
-    def _get_messages_of_sqs_account(self):
-        if not self._sqs:
-            self._sqs = boto3.client('sqs',
-                                     aws_access_key_id=self._backend.sqs_account_id.access_key,
-                                     aws_secret_access_key=self._backend.sqs_account_id.secret_key,
-                                     region_name=self._backend.sqs_account_id.region
-                                     )
-
-        # Get the messages
-        messages = self._receive_sqs_messages()
-        # If number of messages recovered is the max (10) we are going to create a delayed job to recover more messages
-        if len(messages) == 10:
-            # We are going to create a new cursor to can throw the new job now
-            new_cr = registry.get(self._backend.env.cr.dbname).cursor()
-            env = api.Environment(new_cr, self._backend.env.uid, self._backend.env.context)
-            amazon_sqs_message = env['amazon.config.sqs.message']
-            delayable = amazon_sqs_message.with_delay(priority=7, eta=datetime.now())
-            delayable.description = '%s.%s' % ('AmazonAPI', 'receive_sqs_messages()')
-            delayable.get_sqs_messages(self._backend, filters={})
-            new_cr.commit()
-            new_cr.close()
-
-        # Save the messages on database
-        ddbb_messages = self._create_jobs_from_sqs_messages(messages)
-
-        # Return a tuple with the messages as we are get from sqs and orm objects created on odoo
-        return (messages, ddbb_messages)
-
     @api.model
     def _get_offers_changed(self):
         if not self._backend.sqs_account_id:
@@ -267,7 +159,7 @@ class AmazonAPI(object):
         feeds_to_throw = self._backend.env['amazon.feed.tothrow'].search([('backend_id', '=', self._backend.id),
                                                                           ('launched', '=', False), ],
                                                                          order='type',
-                                                                         limit=MAX_NUMBER_FFED_TO_PROCESS)
+                                                                         limit=MAX_NUMBER_FEED_TO_PROCESS)
 
         if feeds_to_throw:
 
@@ -943,7 +835,7 @@ class AmazonAPI(object):
             product_api = Products(backend=self._backend)
 
         try:
-            response = product_api.get_matching_product_for_id(type='SellerSKU', ids=[sku], marketplaceid=marketplace_id)
+            response = product_api.get_matching_product_for_id(type_='SellerSKU', ids=[sku], marketplaceid=marketplace_id)
 
             if response and response._response_dict and response._response_dict[response._rootkey] and \
                     response._response_dict[response._rootkey].get('Products'):
@@ -1626,8 +1518,6 @@ class AmazonAPI(object):
         reader = data[1]
         if not feedbacks:
             feedbacks = {}
-        import wdb
-        wdb.set_trace()
         for line in reader:
             if not feedbacks.get(line['order-id']):
                 feedbacks[line['order-id']] = {'feedback_date':self._get_odoo_date_format(line['date']),

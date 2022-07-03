@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -506,50 +506,6 @@ class ProductLowestPriceImporter(Component):
     _apply_on = ['amazon.product.product']
     _usage = 'amazon.product.offers.import'
 
-    def _get_product_offers(self, record, data):
-        """
-        :param record:
-        :param data:
-        :return:
-        """
-        lowest_price = float('inf')
-        new_offers = []
-        i = 0
-        i_low_price = -1
-        for offer in data:
-            vals = {'product_detail_id':record.id,
-                    'id_seller':self.backend_record.seller if offer['my_offer'] == 'true' else '',
-                    'price':offer['price'],
-                    'currency_price_id':self.env['res.currency'].search([('name', '=', offer['currency_price'])]).id or \
-                                        self.env.user.company_id.currency_id.id or \
-                                        self.env.ref('base.EUR').id,
-                    'price_ship':offer['ship_price'] if offer.get('ship_price') else 0,
-                    'currency_ship_price_id':self.env['res.currency'].search([('name', '=', offer['ship_currency'])]).id or \
-                                             self.env.user.company_id.currency_id.id or \
-                                             self.env.ref('base.EUR').id,
-                    'is_buybox':offer['buybox_winner'] == 'true',
-                    'seller_feedback_rating':offer['feedback_rating'],
-                    'amazon_fulffilled':offer['amazon_fulfilled'] == 'true'}
-
-            if float(vals['price'] or 0) + float(vals['price_ship'] or 0) < lowest_price:
-                lowest_price = float(vals['price'] or 0) + float(vals['price_ship'] or 0)
-                i_low_price = i
-
-            new_offers.append((0, 0, vals))
-            i += 1
-
-        if i_low_price > -1:
-            vals = new_offers.pop(i_low_price)
-            vals[2]['is_lower_price'] = True
-            new_offers.append(vals)
-
-        res = self.env['amazon.historic.product.offer'].create({'offer_date':datetime.now().isoformat(),
-                                                                'product_detail_id':record.id,
-                                                                'offer_ids':new_offers,
-                                                                'message_body':'Direct MWS'})
-
-        return res
-
     def run(self, record):
         '''
         This method is called for get the lowest price, buybox, etc and the category of the product on the marketplace
@@ -631,21 +587,4 @@ class ProductDataImporter(Component):
     def run_products_for_id(self, ids, type_id, marketplace_mws):
         _logger.info('connector_amazon [%s][%s] log: Get products with ean to export these to Amazon' % (os.getpid(), inspect.stack()[0][3]))
         products = self.backend_adapter.get_products_for_id(arguments=[ids, marketplace_mws, type_id])
-        return products
-
-
-class ProductSQSMessageImporter(Component):
-    """ Import data for a record.
-
-        Usually called from importers, in ``_after_import``.
-        For instance from the products importer.
-    """
-
-    _name = 'amazon.product.sqs.message.importer'
-    _inherit = 'amazon.importer'
-    _apply_on = ['amazon.product.product']
-    _usage = 'amazon.product.sqs.message.import'
-
-    def run(self):
-        self.backend_adapter.get_products_for_id(arguments=[ids, marketplace_mws, type_id])
         return products

@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Config settings -->
-    <record id="action_amazon_configuration" model="ir.actions.act_window">
-        <field name="name">Amazon Configuration Settings</field>
-        <field name="res_model">amazon.config.settings</field>
-        <field name="view_mode">form</field>
-        <field name="target">inline</field>
-    </record>
-
     <!-- Marketplace -->
     <record id="view_amazon_marketplace_tree" model="ir.ui.view">
         <field name="name">Amazon marketplaces</field>
@@ -29,11 +21,21 @@
         <field name="model">amazon.config.marketplace</field>
         <field name="arch" type="xml">
             <form>
-                <group><field name="name"/></group>
-                <group><field name="id_mws"/></group>
-                <group><field name="country_id"/></group>
-                <group><field name="lang_id"/></group>
-                <group><field name="decimal_currency_separator"/></group>
+                <group>
+                    <field name="name"/>
+                </group>
+                <group>
+                    <field name="id_mws"/>
+                </group>
+                <group>
+                    <field name="country_id"/>
+                </group>
+                <group>
+                    <field name="lang_id"/>
+                </group>
+                <group>
+                    <field name="decimal_currency_separator"/>
+                </group>
             </form>
         </field>
     </record>
@@ -66,12 +68,24 @@
         <field name="model">amazon.control.request</field>
         <field name="arch" type="xml">
             <form>
-                <group><field name="request_name"/></group>
-                <group><field name="max_quota"/></group>
-                <group><field name="restore_rate"/></group>
-                <group><field name="max_request_quota_time"/></group>
-                <group><field name="max_request_quota_units"/></group>
-                <group><field name="units_of_mesaure_quota"/></group>
+                <group>
+                    <field name="request_name"/>
+                </group>
+                <group>
+                    <field name="max_quota"/>
+                </group>
+                <group>
+                    <field name="restore_rate"/>
+                </group>
+                <group>
+                    <field name="max_request_quota_time"/>
+                </group>
+                <group>
+                    <field name="max_request_quota_units"/>
+                </group>
+                <group>
+                    <field name="units_of_mesaure_quota"/>
+                </group>
             </form>
         </field>
     </record>
@@ -81,61 +95,6 @@
         <field name="res_model">amazon.control.request</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_amazon_mws_control_quota_tree"/>
-    </record>
-
-
-    <!--SQS account-->
-    <record id="view_amazon_sqs_account_tree" model="ir.ui.view">
-        <field name="name">Amazon SQS account</field>
-        <field name="model">amazon.config.sqs.account</field>
-        <field name="arch" type="xml">
-            <tree string="Amazon SQS account">
-                <field name="name"/>
-                <field name="access_key"/>
-                <field name="region"/>
-                <field name="queue_url"/>
-            </tree>
-        </field>
-    </record>
-
-    <record id="view_amazon_sqs_account_form" model="ir.ui.view">
-        <field name="name">amazon.config.sqs.account.form</field>
-        <field name="model">amazon.config.sqs.account</field>
-        <field name="arch" type="xml">
-            <form>
-                <group><field name="name"/></group>
-                <group><field name="access_key"/></group>
-                <group><field name="secret_key"/></group>
-                <group><field name="region"/></group>
-                <group><field name="queue_url"/></group>
-                <group><field name="number_message_to_process"/></group>
-            </form>
-        </field>
-    </record>
-
-    <record id="action_amazon_sqs_account" model="ir.actions.act_window">
-        <field name="name">SQS Account</field>
-        <field name="res_model">amazon.config.sqs.account</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_amazon_sqs_account_tree"/>
-    </record>
-
-    <record id="view_amazon_product_brand_ban_tree" model="ir.ui.view">
-        <field name="name">Amazon product brand ban</field>
-        <field name="model">amazon.brand.ban</field>
-        <field name="arch" type="xml">
-            <tree string="Amazon product brand ban" editable="bottom">
-                <field name="backend_id"/>
-                <field name="brand_ban"/>
-            </tree>
-        </field>
-    </record>
-
-    <record id="action_amazon_brand_ban" model="ir.actions.act_window">
-        <field name="name">Product Brand Ban</field>
-        <field name="res_model">amazon.brand.ban</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_amazon_product_brand_ban_tree"/>
     </record>
 
 </odoo>

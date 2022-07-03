@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -46,9 +46,8 @@ class SaleOrderBatchImporter(Component):
         _logger.info('get report of saleorders returned %s', sales.keys())
         for sale in sales.items():
             sale_binding_model = self.env['amazon.sale.order']
-            if not self.backend_record.check_same_import_jobs(model=sale_binding_model._name, key=sale[0] if isinstance(sale, (tuple, list)) else sale):
-                delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now() + timedelta(minutes=2))
-                delayable.import_record(self.backend_record, sale)
+            delayable = sale_binding_model.with_delay(priority=4, eta=datetime.now() + timedelta(minutes=2))
+            delayable.import_record(self.backend_record, sale)
 
         if filters.get('update_sales_flag'):
             # Get sales with more than 4 days and states updatables

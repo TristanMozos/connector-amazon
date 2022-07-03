@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2018 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# Basic interface to Amazon MWS on Odoo
+# Forked and modified code of https://github.com/czpython/python-amazon-mws
 ##############################################################################
-
 
 from . import quota_control
 from . import mws

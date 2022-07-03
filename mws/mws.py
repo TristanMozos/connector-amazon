@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2019 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 import base64
 import hashlib
 import hmac
-import re
+import os
 import warnings
 
 from time import gmtime, strftime
@@ -44,8 +44,6 @@ try:
     from xml.etree.ElementTree import ParseError as XMLError
 except ImportError:
     from xml.parsers.expat import ExpatError as XMLError
-
-
 
 __all__ = [
     "Feeds",
@@ -65,26 +63,28 @@ __all__ = [
 # for a list of the end points and marketplace IDs
 
 MARKETPLACES = {
-    "AE": "https://mws.amazonservices.ae",  # A2VIGQ35RCS4UG
-    "AU": "https://mws.amazonservices.com.au",  # A39IBJ37TRP1C6
-    "BR": "https://mws.amazonservices.com",  # A2Q3Y263D00KWC
-    "CA": "https://mws.amazonservices.ca",  # A2EUQ1WTGCTBG2
-    "DE": "https://mws-eu.amazonservices.com",  # A1PA6795UKMFR9
-    "EG": "https://mws-eu.amazonservices.com",  # ARBP9OOSHTCHU
-    "ES": "https://mws-eu.amazonservices.com",  # A1RKKUPIHCS9HS
-    "FR": "https://mws-eu.amazonservices.com",  # A13V1IB3VIYZZH
-    "GB": "https://mws-eu.amazonservices.com",  # A1F83G8C2ARO7P
-    "IN": "https://mws.amazonservices.in",  # A21TJRUUN4KGV
-    "IT": "https://mws-eu.amazonservices.com",  # APJ6JRA9NG5V4
-    "JP": "https://mws.amazonservices.jp",  # A1VC38T7YXB528
-    "MX": "https://mws.amazonservices.com.mx",  # A1AM78C64UM0Y8
-    "NL": "https://mws-eu.amazonservices.com",  # A1805IZSGTT6HS
-    "SA": "https://mws-eu.amazonservices.com",  # A17E79C6D8DWNP
-    "SE": "https://mws-eu.amazonservices.com",  # A2NODRKZP88ZB9
-    "SG": "https://mws-fe.amazonservices.com",  # A19VAU5U5O7RUS
-    "TR": "https://mws-eu.amazonservices.com",  # A33AVAJ2PDY3EV
-    "UK": "https://mws-eu.amazonservices.com",  # A1F83G8C2ARO7P - GB alias
-    "US": "https://mws.amazonservices.com",  # ATVPDKIKX0DER
+    "AE":"https://mws.amazonservices.ae",  # A2VIGQ35RCS4UG
+    "AU":"https://mws.amazonservices.com.au",  # A39IBJ37TRP1C6
+    "BE":"https://mws-eu.amazonservices.com",  # AMEN7PMS3EDWL
+    "BR":"https://mws.amazonservices.com",  # A2Q3Y263D00KWC
+    "CA":"https://mws.amazonservices.ca",  # A2EUQ1WTGCTBG2
+    "DE":"https://mws-eu.amazonservices.com",  # A1PA6795UKMFR9
+    "EG":"https://mws-eu.amazonservices.com",  # ARBP9OOSHTCHU
+    "ES":"https://mws-eu.amazonservices.com",  # A1RKKUPIHCS9HS
+    "FR":"https://mws-eu.amazonservices.com",  # A13V1IB3VIYZZH
+    "GB":"https://mws-eu.amazonservices.com",  # A1F83G8C2ARO7P
+    "IN":"https://mws.amazonservices.in",  # A21TJRUUN4KGV
+    "IT":"https://mws-eu.amazonservices.com",  # APJ6JRA9NG5V4
+    "JP":"https://mws.amazonservices.jp",  # A1VC38T7YXB528
+    "MX":"https://mws.amazonservices.com.mx",  # A1AM78C64UM0Y8
+    "NL":"https://mws-eu.amazonservices.com",  # A1805IZSGTT6HS
+    "PL":"https://mws-eu.amazonservices.com",  # A1C3SOZRARQ6R3
+    "SA":"https://mws-eu.amazonservices.com",  # A17E79C6D8DWNP
+    "SE":"https://mws-eu.amazonservices.com",  # A2NODRKZP88ZB9
+    "SG":"https://mws-fe.amazonservices.com",  # A19VAU5U5O7RUS
+    "TR":"https://mws-eu.amazonservices.com",  # A33AVAJ2PDY3EV
+    "UK":"https://mws-eu.amazonservices.com",  # A1F83G8C2ARO7P - GB alias
+    "US":"https://mws.amazonservices.com",  # ATVPDKIKX0DER
 }
 
 
@@ -189,6 +189,7 @@ class MWS(object):
         self._backend = backend
         self.version = version or self.VERSION
         self.uri = self.URI
+        self._test = not backend.prod_environment
 
         if self._backend.region.code in MARKETPLACES:
             self.domain = MARKETPLACES[self._backend.region.code]
@@ -204,21 +205,41 @@ class MWS(object):
         Get the parameters required in all MWS requests
         """
         params = {
-            'AWSAccessKeyId': self._backend.access_key,
-            self.ACCOUNT_TYPE: self._backend.seller,
-            'SignatureVersion': '2',
-            'Timestamp': utils.mws_utc_now(),
-            'Version': self.version,
-            'SignatureMethod': 'HmacSHA256',
+            'AWSAccessKeyId':self._backend.access_key,
+            self.ACCOUNT_TYPE:self._backend.seller,
+            'SignatureVersion':'2',
+            'Timestamp':utils.mws_utc_now(),
+            'Version':self.version,
+            'SignatureMethod':'HmacSHA256',
         }
         if self._backend.token:
             params['MWSAuthToken'] = self._backend.token
         return params
 
+    def make_test_request(self, extra_data, method="GET", **kwargs):
+        action = extra_data['Action']
+        tests_path = os.path.join(os.path.dirname(os.path.abspath(__file__))) + '/tests'
+        files = os.listdir(tests_path)
+        content = None
+        for file_name in files:
+            if action in file_name and os.path.isfile(tests_path + '/' + file_name):
+                with open(tests_path + '/' + file_name, 'r') as file:
+                    content = file.read()
+
+        try:
+            rootkey = kwargs.get("rootkey", extra_data.get("Action") + "Result")
+            parsed_response = DictWrapper(content, rootkey)
+        except Exception as e:
+            raise e
+        return parsed_response
+
     def make_request(self, extra_data, method="GET", **kwargs):
         """
         Make request to Amazon MWS API with these parameters
         """
+        if self._test:
+            return self.make_test_request(extra_data, method, **kwargs)
+
         params = self.get_params()
         params.update(extra_data)
         pool = self._backend.pool.get('amazon.control.request')
@@ -245,7 +266,7 @@ class MWS(object):
             signature=quote(signature),
         )
         headers = {
-            "User-Agent": "python-amazon-mws/{} (Language=Python)"
+            "User-Agent":"python-amazon-mws/{} (Language=Python)"
         }
         headers.update(kwargs.get("extra_headers", {}))
 
@@ -413,13 +434,13 @@ class Feeds(MWS):
     ]
 
     def submit_feed(
-        self,
-        feed,
-        feed_type,
-        feed_options=None,
-        marketplaceids=None,
-        content_type="text/xml",
-        purge="false",
+            self,
+            feed,
+            feed_type,
+            feed_options=None,
+            marketplaceids=None,
+            content_type="text/xml",
+            purge="false",
     ):
         """
         Uploads a feed ( xml or .tsv ) to the seller's inventory.
@@ -440,19 +461,19 @@ class Feeds(MWS):
             data,
             method="POST",
             body=feed,
-            extra_headers={"Content-MD5": md, "Content-Type": content_type},
+            extra_headers={"Content-MD5":md, "Content-Type":content_type},
         )
 
     @utils.next_token_action("GetFeedSubmissionList")
     def get_feed_submission_list(
-        self,
-        feedids=None,
-        max_count=None,
-        feedtypes=None,
-        processingstatuses=None,
-        fromdate=None,
-        todate=None,
-        next_token=None,
+            self,
+            feedids=None,
+            max_count=None,
+            feedtypes=None,
+            processingstatuses=None,
+            fromdate=None,
+            todate=None,
+            next_token=None,
     ):
         """
         Returns a list of all feed submissions submitted in the previous 90 days.
@@ -488,7 +509,7 @@ class Feeds(MWS):
         return self.get_feed_submission_list(next_token=token)
 
     def get_feed_submission_count(
-        self, feedtypes=None, processingstatuses=None, fromdate=None, todate=None
+            self, feedtypes=None, processingstatuses=None, fromdate=None, todate=None
     ):
         data = dict(
             Action="GetFeedSubmissionCount",
@@ -504,7 +525,7 @@ class Feeds(MWS):
         return self.make_request(data)
 
     def cancel_feed_submissions(
-        self, feedids=None, feedtypes=None, fromdate=None, todate=None
+            self, feedids=None, feedtypes=None, fromdate=None, todate=None
     ):
         data = dict(
             Action="CancelFeedSubmissions",
@@ -539,7 +560,7 @@ class Reports(MWS):
         return self.make_request(data)
 
     def get_report_count(
-        self, report_types=(), acknowledged=None, fromdate=None, todate=None
+            self, report_types=(), acknowledged=None, fromdate=None, todate=None
     ):
         data = dict(
             Action="GetReportCount",
@@ -552,14 +573,14 @@ class Reports(MWS):
 
     @utils.next_token_action("GetReportList")
     def get_report_list(
-        self,
-        requestids=(),
-        max_count=None,
-        types=(),
-        acknowledged=None,
-        fromdate=None,
-        todate=None,
-        next_token=None,
+            self,
+            requestids=(),
+            max_count=None,
+            types=(),
+            acknowledged=None,
+            fromdate=None,
+            todate=None,
+            next_token=None,
     ):
         data = dict(
             Action="GetReportList",
@@ -586,7 +607,7 @@ class Reports(MWS):
         return self.get_report_list(next_token=token)
 
     def get_report_request_count(
-        self, report_types=(), processingstatuses=(), fromdate=None, todate=None
+            self, report_types=(), processingstatuses=(), fromdate=None, todate=None
     ):
         data = dict(
             Action="GetReportRequestCount",
@@ -603,14 +624,14 @@ class Reports(MWS):
 
     @utils.next_token_action("GetReportRequestList")
     def get_report_request_list(
-        self,
-        requestids=(),
-        types=(),
-        processingstatuses=(),
-        max_count=None,
-        fromdate=None,
-        todate=None,
-        next_token=None,
+            self,
+            requestids=(),
+            types=(),
+            processingstatuses=(),
+            max_count=None,
+            fromdate=None,
+            todate=None,
+            next_token=None,
     ):
         data = dict(
             Action="GetReportRequestList",
@@ -641,7 +662,7 @@ class Reports(MWS):
         return self.get_report_request_list(next_token=token)
 
     def request_report(
-        self, report_type, start_date=None, end_date=None, marketplaceids=()
+            self, report_type, start_date=None, end_date=None, marketplaceids=()
     ):
         data = dict(
             Action="RequestReport",
@@ -680,21 +701,20 @@ class Orders(MWS):
 
     @utils.next_token_action("ListOrders")
     def list_orders(
-        self,
-        marketplaceids=None,
-        created_after=None,
-        created_before=None,
-        lastupdatedafter=None,
-        lastupdatedbefore=None,
-        orderstatus=(),
-        fulfillment_channels=(),
-        payment_methods=(),
-        buyer_email=None,
-        seller_orderid=None,
-        max_results="100",
-        next_token=None,
+            self,
+            marketplaceids=None,
+            created_after=None,
+            created_before=None,
+            lastupdatedafter=None,
+            lastupdatedbefore=None,
+            orderstatus=(),
+            fulfillment_channels=(),
+            payment_methods=(),
+            buyer_email=None,
+            seller_orderid=None,
+            max_results="100",
+            next_token=None,
     ):
-
         data = dict(
             Action="ListOrders",
             CreatedAfter=created_after,
@@ -758,6 +778,7 @@ class Products(MWS):
     URI = "/Products/2011-10-01"
     VERSION = "2011-10-01"
     NAMESPACE = "{http://mws.amazonservices.com/schema/Products/2011-10-01}"
+
     # NEXT_TOKEN_OPERATIONS = []
 
     def list_matching_products(self, marketplaceid, query, contextid=None):
@@ -817,7 +838,7 @@ class Products(MWS):
         return self.make_request(data)
 
     def get_lowest_offer_listings_for_sku(
-        self, marketplaceid, skus, condition="Any", excludeme="False"
+            self, marketplaceid, skus, condition="Any", excludeme="False"
     ):
         data = dict(
             Action="GetLowestOfferListingsForSKU",
@@ -829,7 +850,7 @@ class Products(MWS):
         return self.make_request(data)
 
     def get_lowest_offer_listings_for_asin(
-        self, marketplaceid, asins, condition="Any", excludeme="False"
+            self, marketplaceid, asins, condition="Any", excludeme="False"
     ):
         data = dict(
             Action="GetLowestOfferListingsForASIN",
@@ -841,7 +862,7 @@ class Products(MWS):
         return self.make_request(data)
 
     def get_lowest_priced_offers_for_sku(
-        self, marketplaceid, sku, condition="New", excludeme="False"
+            self, marketplaceid, sku, condition="New", excludeme="False"
     ):
         data = dict(
             Action="GetLowestPricedOffersForSKU",
@@ -853,7 +874,7 @@ class Products(MWS):
         return self.make_request(data)
 
     def get_lowest_priced_offers_for_asin(
-        self, marketplaceid, asin, condition="New", excludeme="False"
+            self, marketplaceid, asin, condition="New", excludeme="False"
     ):
         data = dict(
             Action="GetLowestPricedOffersForASIN",
@@ -988,7 +1009,7 @@ class Finances(MWS):
 
     @utils.next_token_action("ListFinancialEventGroups")
     def list_financial_event_groups(
-        self, created_after=None, created_before=None, max_results=None, next_token=None
+            self, created_after=None, created_before=None, max_results=None, next_token=None
     ):
         """
         Returns a list of financial event groups
@@ -1014,13 +1035,13 @@ class Finances(MWS):
 
     @utils.next_token_action("ListFinancialEvents")
     def list_financial_events(
-        self,
-        financial_event_group_id=None,
-        amazon_order_id=None,
-        posted_after=None,
-        posted_before=None,
-        max_results=None,
-        next_token=None,
+            self,
+            financial_event_group_id=None,
+            amazon_order_id=None,
+            posted_after=None,
+            posted_before=None,
+            max_results=None,
+            next_token=None,
     ):
         """
         Returns financial events for a user-provided FinancialEventGroupId or AmazonOrderId
@@ -1121,7 +1142,7 @@ class InboundShipments(MWS):
 
         # Passed tests. Assign values
         addr = {
-            "ShipFromAddress.{}".format(c[1]): address.get(c[0], c[3])
+            "ShipFromAddress.{}".format(c[1]):address.get(c[0], c[3])
             for c in key_config
         }
         self.from_address = addr
@@ -1196,13 +1217,13 @@ class InboundShipments(MWS):
                 quantity_in_case = str(quantity_in_case)
 
             item_dict = {
-                "SellerSKU": item.get("sku"),
-                quantity_key: quantity,
-                "QuantityInCase": quantity_in_case,
+                "SellerSKU":item.get("sku"),
+                quantity_key:quantity,
+                "QuantityInCase":quantity_in_case,
             }
             item_dict.update(
                 {
-                    c[1]: item.get(c[0], c[3])
+                    c[1]:item.get(c[0], c[3])
                     for c in key_config
                     if c[0] not in ["sku", "quantity", "quantity_in_case"]
                 }
@@ -1212,7 +1233,7 @@ class InboundShipments(MWS):
         return items
 
     def create_inbound_shipment_plan(
-        self, items, country_code="US", subdivision_code="", label_preference=""
+            self, items, country_code="US", subdivision_code="", label_preference=""
     ):
         """
         Returns one or more inbound shipment plans, which provide the
@@ -1256,15 +1277,15 @@ class InboundShipments(MWS):
         return self.make_request(data, method="POST")
 
     def create_inbound_shipment(
-        self,
-        shipment_id,
-        shipment_name,
-        destination,
-        items,
-        shipment_status="",
-        label_preference="",
-        case_required=False,
-        box_contents_source=None,
+            self,
+            shipment_id,
+            shipment_name,
+            destination,
+            items,
+            shipment_status="",
+            label_preference="",
+            case_required=False,
+            box_contents_source=None,
     ):
         """
         Creates an inbound shipment to Amazon's fulfillment network.
@@ -1295,7 +1316,7 @@ class InboundShipments(MWS):
             )
         from_address = self.from_address
         from_address = {
-            "InboundShipmentHeader.{}".format(k): v for k, v in from_address.items()
+            "InboundShipmentHeader.{}".format(k):v for k, v in from_address.items()
         }
 
         if shipment_status not in self.SHIPMENT_STATUSES:
@@ -1312,14 +1333,14 @@ class InboundShipments(MWS):
         case_required = "true" if case_required else "false"
 
         data = {
-            "Action": "CreateInboundShipment",
-            "ShipmentId": shipment_id,
-            "InboundShipmentHeader.ShipmentName": shipment_name,
-            "InboundShipmentHeader.DestinationFulfillmentCenterId": destination,
-            "InboundShipmentHeader.LabelPrepPreference": label_preference,
-            "InboundShipmentHeader.AreCasesRequired": case_required,
-            "InboundShipmentHeader.ShipmentStatus": shipment_status,
-            "InboundShipmentHeader.IntendedBoxContentsSource": box_contents_source,
+            "Action":"CreateInboundShipment",
+            "ShipmentId":shipment_id,
+            "InboundShipmentHeader.ShipmentName":shipment_name,
+            "InboundShipmentHeader.DestinationFulfillmentCenterId":destination,
+            "InboundShipmentHeader.LabelPrepPreference":label_preference,
+            "InboundShipmentHeader.AreCasesRequired":case_required,
+            "InboundShipmentHeader.ShipmentStatus":shipment_status,
+            "InboundShipmentHeader.IntendedBoxContentsSource":box_contents_source,
         }
         data.update(from_address)
         data.update(
@@ -1331,15 +1352,15 @@ class InboundShipments(MWS):
         return self.make_request(data, method="POST")
 
     def update_inbound_shipment(
-        self,
-        shipment_id,
-        shipment_name,
-        destination,
-        items=None,
-        shipment_status="",
-        label_preference="",
-        case_required=False,
-        box_contents_source=None,
+            self,
+            shipment_id,
+            shipment_name,
+            destination,
+            items=None,
+            shipment_status="",
+            label_preference="",
+            case_required=False,
+            box_contents_source=None,
     ):
         """
         Updates an existing inbound shipment in Amazon FBA.
@@ -1368,7 +1389,7 @@ class InboundShipments(MWS):
         # Assemble the from_address using operation-specific header
         from_address = self.from_address
         from_address = {
-            "InboundShipmentHeader.{}".format(k): v for k, v in from_address.items()
+            "InboundShipmentHeader.{}".format(k):v for k, v in from_address.items()
         }
 
         if shipment_status not in self.SHIPMENT_STATUSES:
@@ -1384,14 +1405,14 @@ class InboundShipments(MWS):
         case_required = "true" if case_required else "false"
 
         data = {
-            "Action": "UpdateInboundShipment",
-            "ShipmentId": shipment_id,
-            "InboundShipmentHeader.ShipmentName": shipment_name,
-            "InboundShipmentHeader.DestinationFulfillmentCenterId": destination,
-            "InboundShipmentHeader.LabelPrepPreference": label_preference,
-            "InboundShipmentHeader.AreCasesRequired": case_required,
-            "InboundShipmentHeader.ShipmentStatus": shipment_status,
-            "InboundShipmentHeader.IntendedBoxContentsSource": box_contents_source,
+            "Action":"UpdateInboundShipment",
+            "ShipmentId":shipment_id,
+            "InboundShipmentHeader.ShipmentName":shipment_name,
+            "InboundShipmentHeader.DestinationFulfillmentCenterId":destination,
+            "InboundShipmentHeader.LabelPrepPreference":label_preference,
+            "InboundShipmentHeader.AreCasesRequired":case_required,
+            "InboundShipmentHeader.ShipmentStatus":shipment_status,
+            "InboundShipmentHeader.IntendedBoxContentsSource":box_contents_source,
         }
         data.update(from_address)
         if items:
@@ -1422,7 +1443,7 @@ class InboundShipments(MWS):
         data.update(
             utils.enumerate_params(
                 {
-                    "SellerSKUList.ID.": skus,
+                    "SellerSKUList.ID.":skus,
                 }
             )
         )
@@ -1446,7 +1467,7 @@ class InboundShipments(MWS):
         data.update(
             utils.enumerate_params(
                 {
-                    "ASINList.ID.": asins,
+                    "ASINList.ID.":asins,
                 }
             )
         )
@@ -1504,11 +1525,11 @@ class InboundShipments(MWS):
 
     @utils.next_token_action("ListInboundShipments")
     def list_inbound_shipments(
-        self,
-        shipment_ids=None,
-        shipment_statuses=None,
-        last_updated_after=None,
-        last_updated_before=None,
+            self,
+            shipment_ids=None,
+            shipment_statuses=None,
+            last_updated_after=None,
+            last_updated_before=None,
     ):
         """
         Returns list of shipments based on statuses, IDs, and/or
@@ -1525,8 +1546,8 @@ class InboundShipments(MWS):
         data.update(
             utils.enumerate_params(
                 {
-                    "ShipmentStatusList.member.": shipment_statuses,
-                    "ShipmentIdList.member.": shipment_ids,
+                    "ShipmentStatusList.member.":shipment_statuses,
+                    "ShipmentIdList.member.":shipment_ids,
                 }
             )
         )
@@ -1534,10 +1555,10 @@ class InboundShipments(MWS):
 
     @utils.next_token_action("ListInboundShipmentItems")
     def list_inbound_shipment_items(
-        self,
-        shipment_id=None,
-        last_updated_after=None,
-        last_updated_before=None,
+            self,
+            shipment_id=None,
+            last_updated_after=None,
+            last_updated_before=None,
     ):
         """
         Returns list of items within inbound shipments and/or
@@ -1569,7 +1590,7 @@ class Inventory(MWS):
 
     @utils.next_token_action("ListInventorySupply")
     def list_inventory_supply(
-        self, skus=(), datetime_=None, response_group="Basic", next_token=None
+            self, skus=(), datetime_=None, response_group="Basic", next_token=None
     ):
         """
         Returns information on available inventory
@@ -1634,7 +1655,7 @@ class Recommendations(MWS):
 
     @utils.next_token_action("ListRecommendations")
     def list_recommendations(
-        self, marketplaceid=None, recommendationcategory=None, next_token=None
+            self, marketplaceid=None, recommendationcategory=None, next_token=None
     ):
         """
         Returns your active recommendations for a specific category or for all categories for a specific marketplace.

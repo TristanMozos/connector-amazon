@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ import logging
 import time
 from odoo import models, fields, api
 from odoo.addons.component.core import Component
-from odoo.addons.queue_job.job import job
+from odoo.addons.queue_job.job import Job
 
 _logger = logging.getLogger(__name__)
 
@@ -35,7 +35,6 @@ class AmazonReport(models.Model):
     _inherit = 'amazon.binding'
     _description = 'Amazon Return'
 
-    @job(default_channel='root.amazon')
     @api.model
     def import_batch(self, backend, filters=None):
         _super = super(AmazonReport, self)

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (http://www.halltic.com)
+#    Odoo, Open Source Management Tech
+#    Copyright (C) 2022 Halltic Tech S.L. (http://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 {
     'name':'Amazon Connector',
     'version':'0.2.0',
-    'author':'Halltic eSolutions S.L.',
+    'author':'Halltic Tech S.L.',
     'maintainer':'True',
     'website':'False',
     'license':'',
@@ -103,7 +103,7 @@ Credits
 Images
 ------
 
-* Odoo Community Association: `Icon <https://github.com/OCA/maintainer-tools/blob/master/template/module/static/description/icon.svg>`_.
+* Odoo Community Association: `Icon <https://github.com/OCA/maintainer-tools/blob/master/template/module/static/description/icon.png>`_.
 
 Contributors
 ------------
@@ -115,7 +115,7 @@ Funders
 
 The development of this module has been financially supported by:
 
-* Halltic eSolutions S.L.
+* Halltic Tech S.L.
 
 Maintainer
 ----------
@@ -124,7 +124,7 @@ Maintainer
    :alt: Odoo Community Association
    :target: https://odoo-community.org
 
-This module is maintained by the Halltic eSolutions S.L.
+This module is maintained by the Halltic Tech S.L.
 
 To contribute to this module, please visit https://github.com/TristanMozos/
 
@@ -133,13 +133,13 @@ To contribute to this module, please visit https://github.com/TristanMozos/
 """,
 
     # any module necessary for this one to work correctly
-    'depends':['connector',
-               'base_technical_user',
-               'sale_stock',
+    'depends':['base',
+               'sale',
+               'connector_ecommerce',
                'product_margin',
                'delivery',
-               'product_brand',
-               'product_dimension',
+               'product_multi_image',
+               'calc_taxes_total_price',
                'partner_address_street3', ],
 
     # always loaded
@@ -151,28 +151,13 @@ To contribute to this module, please visit https://github.com/TristanMozos/
         'views/amazon_order_views.xml',
         'views/amazon_partner_views.xml',
         'views/amazon_product_views.xml',
-        'views/amazon_return_views.xml',
-        'views/amazon_feed_views.xml',
-        'views/amazon_feedbacks_views.xml',
         'views/connector_amazon_menu.xml',
-        'wizards/wizard_import_orders.xml',
-        'wizards/wizard_export_products.xml',
-        'wizards/wizard_set_change_prices_margins_flag.xml',
-        #'wizards/wizard_migrate_backend_products.xml',
-        'wizards/wizard_import_products.xml',
-        'wizards/wizard_delete_amazon_product.xml',
-        'views/product_views.xml',
-        #'views/res_partner_views.xml',
-        'views/sale_order_views.xml',
         'data/amazon_scheduler.xml',
         'data/amazon_connector_data.xml',
         'data/quota_mws_data.xml',
     ],
     # only loaded in demonstration mode
-    'demo':[
-        'demo/demo.xml'
-    ],
-
+    'demo':[],
     'js':[],
     'css':[],
     'qweb':[],

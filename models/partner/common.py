@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import logging
 
 from odoo import models, fields, api
 from odoo.addons.component.core import Component
-from odoo.addons.queue_job.job import job
+from odoo.addons.queue_job.job import Job
 
 _logger = logging.getLogger(__name__)
 
@@ -42,11 +42,11 @@ class AmazonResPartner(models.Model):
 
     alias = fields.Char()
 
-    @job(default_channel='root.amazon')
     @api.model
     def import_record(self, backend, external_id):
         _super = super(AmazonResPartner, self)
         return _super.import_record(backend, external_id)
+
 
 class AmazonPartnerAdapter(Component):
     _name = 'amazon.res.partner.adapter'
@@ -63,7 +63,6 @@ class ResPartner(models.Model):
         string='Amazon Bindings',
     )
     get_supplier_stock = fields.Selection(string='Get supplier stock?', selection=[('1', 'Yes'), ('0', 'No'), ])
-
 
     automatic_export_products = fields.Boolean('Automatic export new products to Amazon?', default=False)
     backend_id = fields.Many2one('amazon.backend')

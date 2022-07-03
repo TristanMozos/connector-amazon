@@ -18,32 +18,4 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# This project is based on connector-magneto, developed by Camptocamp SA
 ##############################################################################
-
-from odoo.addons.component.core import AbstractComponent
-
-
-class AmazonImportMapper(AbstractComponent):
-    _name = 'amazon.import.mapper'
-    _inherit = ['base.amazon.connector', 'base.import.mapper']
-    _usage = 'import.mapper'
-
-
-class AmazonExportMapper(AbstractComponent):
-    _name = 'amazon.export.mapper'
-    _inherit = ['base.amazon.connector', 'base.export.mapper']
-    _usage = 'export.mapper'
-
-
-def normalize_datetime(field):
-    """Change a invalid date which comes from Amazon, if
-    no real date is set to null for correct import to
-    OpenERP"""
-
-    def modifier(self, record, to_attr):
-        if record[field] == '0000-00-00 00:00:00':
-            return None
-        return record[field]
-
-    return modifier

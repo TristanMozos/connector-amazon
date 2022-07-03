@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,6 @@ import odoo.addons.decimal_precision as dp
 from odoo import models, fields, api, _
 from odoo.addons.component.core import Component
 from odoo.addons.queue_job.exception import RetryableJobError
-from odoo.addons.queue_job.job import job
 from odoo.exceptions import UserError
 
 from ...models.config.common import AMAZON_DEFAULT_PERCENTAGE_FEE
@@ -116,7 +115,6 @@ class AmazonSaleOrder(models.Model):
             result.append((record.id, record.id_amazon_order))
         return result
 
-    @job(default_channel='root.amazon')
     def export_state_change(self, allowed_states=None,
                             comment=None, notify=None):
         """ Change state of a sales order on Amazon """
@@ -126,7 +124,6 @@ class AmazonSaleOrder(models.Model):
             return exporter.run(self, allowed_states=allowed_states,
                                 comment=comment, notify=notify)
 
-    @job(default_channel='root.amazon')
     @api.model
     def import_batch(self, backend, filters=None):
         _super = super(AmazonSaleOrder, self)
@@ -135,7 +132,6 @@ class AmazonSaleOrder(models.Model):
             raise result
         return result
 
-    @job(default_channel='root.amazon')
     @api.model
     def import_record(self, backend, external_id):
         _super = super(AmazonSaleOrder, self)

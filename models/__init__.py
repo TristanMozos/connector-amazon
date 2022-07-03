@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -25,12 +25,5 @@ from . import amazon_binding
 from . import config
 from . import product
 from . import sale_order
-from . import return_order
 from . import report
 from . import partner
-from . import feeds
-from . import stock
-from . import fix_data
-from . import account_tax
-from . import message
-from . import performance

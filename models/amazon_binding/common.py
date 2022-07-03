@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2018 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic T S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 from odoo import api, models, fields
 from odoo.addons.queue_job.exception import FailedJobError, RetryableJobError
-from odoo.addons.queue_job.job import job, related_action
+from odoo.addons.queue_job.job import Job
 
 
 class AmazonBinding(models.AbstractModel):
@@ -51,7 +51,6 @@ class AmazonBinding(models.AbstractModel):
          'A binding already exists with the same Amazon ID.'),
     ]
 
-    @job(default_channel='root.amazon')
     @api.model
     def import_batch(self, backend, filters=None):
         """ Prepare the import of records modified on Amazon """
@@ -65,7 +64,6 @@ class AmazonBinding(models.AbstractModel):
         except Exception as e:
             return e
 
-    @job(default_channel='root.amazon')
     @api.model
     def export_batch(self, backend, filters=None):
         """ Prepare the export of records on Amazon """
@@ -78,7 +76,6 @@ class AmazonBinding(models.AbstractModel):
         except Exception as e:
             return e
 
-    @job(default_channel='root.amazon')
     @api.model
     def import_record(self, backend, external_id, force=False):
         """ Import a Amazon record """
@@ -93,7 +90,6 @@ class AmazonBinding(models.AbstractModel):
         if exception:
             raise exception
 
-    @job(default_channel='root.amazon')
     def export_record(self, backend, internal_id):
         """ Export a record on Amazon """
         exception = None

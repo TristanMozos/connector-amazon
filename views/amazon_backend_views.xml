@@ -18,45 +18,73 @@
         <field name="model">amazon.backend</field>
         <field name="arch" type="xml">
             <form>
-                <group>
-                   <field name="name"/>
-                </group>
-                <group>
-                    <group><field name="region"/></group>
-                </group>
-                <group><field name="access_key"/></group>
-                <group><field name="key" password="True"/></group>
-                <group><field name="seller"/></group>
-                <group><field name="token" password="True"/></group>
-                <group><field name="developer"/></group>
-                <group><field name="import_sales_from_date"/></group>
-                <group><field name="import_updated_sales_from_date"/></group>
-                <group><field name="import_feedbacks_from_date"/></group>
-                <group><field name="team_id"/></group>
-                <group><field name="sale_prefix"/></group>
-                <group><field name="warehouse_id"/></group>
-                <group><field name="sqs_account_id"/></group>
-                <group><field name="stock_sync"/></group>
-                <group><field name="change_prices"/></group>
-                <group name="min_margin" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="min_margin"/></group>
-                <group name="max_margin" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="max_margin"/></group>
-                <group name="units_to_change" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="units_to_change"/></group>
-                <group name="min_price_margin_value" attrs="{'invisible': [('change_prices', '!=', '1')]}"><field name="min_price_margin_value"/></group>
-                <group><field name="fba_warehouse_id"/></group>
-                <group><field name="marketplace_ids"/></group>
-                <group>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_prod_environment"
+                                attrs="{'invisible': [('prod_environment', '=', False)]}"
+                                class="oe_stat_button"
+                                type="object" icon="fa-play">
+                            <div class="o_stat_info o_field_widget">
+                                <span class="text-success">Production</span>
+                                <span class="o_stat_text">Environment</span>
+                            </div>
+                        </button>
+                        <!-- transfer referenced here due to view inheritance issue in current master (post-saas-16) -->
+                        <button name="toggle_prod_environment"
+                                attrs="{'invisible': [('prod_environment', '=', True)]}"
+                                class="oe_stat_button"
+                                type="object" icon="fa-stop">
+                            <div class="o_stat_info o_field_widget">
+                                <span class="o_warning_text">Test</span>
+                                <span class="o_stat_text">Environment</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title" name="title">
+                        <label for="name" string="Name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="Backend name"/>
+                            <field name="prod_environment" invisible="1"/>
+                        </h1>
+                    </div>
                     <group>
-                        <field name="shipping_template_ids"/>
+                        <group>
+                            <field name="region"/>
+                        </group>
                     </group>
+
                     <group>
-                        <button string="Import templates"
-                                    type="object"
-                                    name="get_templates_from_products"
-                                    class="oe_highlight"/>
+                        <field name="warehouse_id"/>
                     </group>
-                </group>
-                <footer>
-                </footer>
+
+                    <notebook>
+                        <page name="credentials" string="MWS credentials">
+                            <group name="mws_credentials">
+                                <field name="access_key"/>
+                                <field name="key" password="True"/>
+                                <field name="seller"/>
+                                <field name="token" password="True"/>
+                                <field name="developer"/>
+                            </group>
+                        </page>
+
+                        <page name="sales" string="Sales configuration">
+                            <group name="sales_configuration">
+                                <field name="import_sales_from_date"/>
+                                <field name="import_updated_sales_from_date" invisible="1"/>
+                                <field name="team_id"/>
+                                <field name="sale_prefix"/>
+                            </group>
+                        </page>
+
+                        <page name="marketplaces" string="Marketplaces">
+                            <group name="backend_marketplaces">
+                                <field name="marketplace_ids"/>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
             </form>
         </field>
     </record>

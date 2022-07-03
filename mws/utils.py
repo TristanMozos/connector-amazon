@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2019 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -94,7 +94,7 @@ class ObjectDict(dict):
             return iter([self])
         return self
 
-    def get(self, key, default=None):
+    def getvalue(self, key, default=None):
         """Access a node like `dict.get`, including default values."""
         try:
             return self.__getitem__(key)
@@ -112,7 +112,7 @@ class XML2Dict(object):
         if node.text:
             node_tree.value = node.text
         for key, val in node.attrib.items():
-            key, val = self._namespace_split(key, ObjectDict({"value": val}))
+            key, val = self._namespace_split(key, ObjectDict({"value":val}))
             node_tree[key] = val
         # Save children
         for child in node:
@@ -153,7 +153,7 @@ class XML2Dict(object):
         """
         text = ET.fromstring(str_)
         root_tag, root_tree = self._namespace_split(text.tag, self._parse_node(text))
-        return ObjectDict({root_tag: root_tree})
+        return ObjectDict({root_tag:root_tree})
 
 
 def enumerate_param(param, values):
@@ -183,7 +183,7 @@ def enumerate_param(param, values):
         # Ensure this enumerated param ends in '.'
         param += "."
     # Return final output: dict comprehension of the enumerated param and values.
-    return {"{}{}".format(param, idx + 1): val for idx, val in enumerate(values)}
+    return {"{}{}".format(param, idx + 1):val for idx, val in enumerate(values)}
 
 
 def enumerate_params(params=None):
@@ -249,7 +249,7 @@ def enumerate_keyed_param(param, values):
         # Build the final output.
         params.update(
             {
-                "{param}{idx}.{key}".format(param=param, idx=idx + 1, key=k): v
+                "{param}{idx}.{key}".format(param=param, idx=idx + 1, key=k):v
                 for k, v in val_dict.items()
             }
         )
@@ -307,6 +307,7 @@ def next_token_action(action_name):
 
     return _decorator
 
+
 def remove_xml_namespaces(data):
     """Return namespaces found in the XML `data`, in either str or bytes format."""
     pattern = r'xmlns(:ns2)?="[^"]+"|(ns2:)|(xml:)'
@@ -317,6 +318,7 @@ def remove_xml_namespaces(data):
         replacement = replacement.encode()
     return re.sub(pattern, replacement, data)
 
+
 def mws_utc_now():
     """Returns the current UTC time, as expected by MWS.
     Note that we set microseconds to 0 automatically with this method:
@@ -324,11 +326,13 @@ def mws_utc_now():
     """
     return datetime.datetime.utcnow().replace(microsecond=0)
 
+
 def remove_empty_param_keys(params):
     """Returns a copy of ``params`` dict where any key with a value of ``None``
     or ``""`` (empty string) are removed.
     """
-    return {k: v for k, v in params.items() if v is not None and v != ""}
+    return {k:v for k, v in params.items() if v is not None and v != ""}
+
 
 def clean_params_dict(params):
     """Clean multiple param values in a dict, returning a new dict
@@ -344,6 +348,7 @@ def clean_params_dict(params):
             raise MWSError(str(exc)) from exc
     return cleaned_params
 
+
 def clean_value(val):
     """Attempts to clean a value so that it can be sent in a request."""
     if isinstance(val, (dict, list, set, tuple)):
@@ -356,6 +361,7 @@ def clean_value(val):
 
     # For all else, assume a string, and clean that.
     return clean_string(str(val))
+
 
 def clean_string(val):
     """Passes a string value through `urllib.parse.quote` to clean it.

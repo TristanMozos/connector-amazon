@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2017 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -92,10 +92,8 @@ class PartnerImportMapper(Component):
 
         company = None
         account_position = None
-        if self.backend_record.company_id:
-            company = self.backend_record.sudo().company_id
-        else:
-            company = self.env.user.company_id
+
+        company = self.env.user.company_id
 
         if company.country_id.code == 'ES' and record.get('country_id') and record.get('zip'):
             country_partner = self.env['res.country'].search([('code', '=', record['country_id'])])
@@ -138,11 +136,6 @@ class PartnerImportMapper(Component):
         # addresses on them
         return {'is_company':False}
 
-    @only_create
-    @mapping
-    def customer(self, record):
-        return {'customer':True}
-
     @mapping
     def type(self, record):
         return {'type':'delivery'}
@@ -155,7 +148,6 @@ class PartnerImportMapper(Component):
         partner = self.env['res.partner'].search(
             [('email', '=', record['email']),
              ('zip', '=', record['zip']),
-             ('customer', '=', True),
              '|',
              ('is_company', '=', True),
              ('parent_id', '=', False)],

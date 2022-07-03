@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2018 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -48,6 +48,7 @@ In addition to its export job, an exporter has to:
 
 """
 
+
 class BatchExporter(AbstractComponent):
     """ The role of a BatchExporter is to send a list of
     items to export, then it can either export them directly or delay
@@ -69,6 +70,7 @@ class BatchExporter(AbstractComponent):
         Method to implement in sub-classes.
         """
         raise NotImplementedError
+
 
 class AmazonExporter(AbstractComponent):
     """ Base exporter for Amazon """

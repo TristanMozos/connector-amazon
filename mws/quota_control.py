@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Odoo, Open Source Management Solution
-#    Copyright (C) 2019 Halltic eSolutions S.L. (https://www.halltic.com)
+#    Copyright (C) 2022 Halltic Tech S.L. (https://www.halltic.com)
 #                  Tristán Mozos <tristan.mozos@halltic.com>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,6 @@ from math import ceil
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.addons.queue_job.exception import FailedJobError, RetryableJobError
-
 
 _logger = logging.getLogger(__name__)
 
@@ -77,18 +76,20 @@ class ControlRequest(models.Model):
 
             # Control to hourly quota
             record_count = self.env['amazon.control.date.request'].search_count([('backend_id', '=', backend_id),
-                                                                            ('request_id', '=', control.id),
-                                                                            ('create_date', '>', (time_now - timedelta(seconds=(max_request_factor-(max_request_factor*0.1)))).isoformat())],
-                                                                           )
+                                                                                 ('request_id', '=', control.id),
+                                                                                 ('create_date', '>', (time_now - timedelta(
+                                                                                     seconds=(max_request_factor - (max_request_factor * 0.1)))).isoformat())],
+                                                                                )
 
-            if record_count>control.max_request_quota_time:
+            if record_count > control.max_request_quota_time:
                 raise UserError(_("The quota of %s is empty (MWS)" % request_name))
 
             # Control max quota
-            seconds_control = control.max_quota*control.restore_rate
+            seconds_control = control.max_quota * control.restore_rate
             record_count = self.env['amazon.control.date.request'].search_count([('backend_id', '=', backend_id),
                                                                                  ('request_id', '=', control.id),
-                                                                                 ('create_date', '>', (time_now - timedelta(seconds=(seconds_control-(seconds_control*0.2)))).isoformat())],
+                                                                                 ('create_date', '>', (time_now - timedelta(
+                                                                                     seconds=(seconds_control - (seconds_control * 0.2)))).isoformat())],
                                                                                 )
 
             if record_count > control.max_quota:

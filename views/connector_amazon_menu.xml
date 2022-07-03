@@ -15,11 +15,6 @@
               sequence="20"
               groups="connector_amazon.group_connector_amazon_manager"/>
 
-    <menuitem id="menu_amazon_config"
-              name="Amazon Settings"
-              parent="menu_amazon_configuration"
-              action="action_amazon_configuration"/>
-
     <menuitem id="menu_amazon_marketplace"
               name="Marketplace"
               parent="menu_amazon_configuration"
@@ -31,18 +26,6 @@
               parent="menu_amazon_configuration"
               action="action_amazon_mws_control_quota"
               groups="connector_amazon.group_connector_amazon_manager"/>
-
-    <menuitem id="menu_amazon_sqs_account"
-              name="SQS Account"
-              parent="menu_amazon_configuration"
-              action="action_amazon_sqs_account"
-              groups="connector_amazon.group_connector_amazon_manager"/>
-
-    <menuitem id="menu_amazon_brand_ban"
-              name="Product brand ban"
-              parent="menu_amazon_configuration"
-              action="action_amazon_brand_ban"
-              groups="connector_amazon.group_connector_amazon_user"/>
 
     <!-- Backends submenu -->
     <menuitem id="menu_amazon_backend"
@@ -83,43 +66,5 @@
               parent="menu_amazon_root"
               action="action_amazon_partner"
               groups="connector_amazon.group_connector_amazon_manager"/>
-
-    <!-- Returns submenu -->
-    <menuitem id="menu_amazon_returns"
-              name="Returns"
-              parent="menu_amazon_root"
-              action="action_amazon_return"/>
-
-    <!-- Feeds submenu -->
-    <menuitem id="menu_amazon_feeds"
-              parent="menu_amazon_root"
-              name="Feeds"
-              sequence="40"
-              groups="connector_amazon.group_connector_amazon_manager"/>
-
-    <menuitem id="menu_amazon_feeds_launched"
-              parent="menu_amazon_feeds"
-              name="Feeds launched"
-              action="action_amazon_feed"
-              groups="connector_amazon.group_connector_amazon_manager"/>
-
-    <menuitem id="menu_amazon_feeds_to_throw"
-              parent="menu_amazon_feeds"
-              name="Feeds to throw"
-              action="action_amazon_throw_feed"
-              groups="connector_amazon.group_connector_amazon_manager"/>
-
-    <!-- Performance submenu -->
-    <menuitem id="menu_amazon_performance"
-              parent="menu_amazon_root"
-              name="Performance"
-              sequence="50"
-              groups="connector_amazon.group_connector_amazon_user"/>
-
-    <menuitem id="menu_amazon_feedbacks"
-              parent="menu_amazon_performance"
-              name="Feedbacks"
-              action="action_amazon_feedbacks"
-              groups="connector_amazon.group_connector_amazon_user"/>
 
 </odoo>
